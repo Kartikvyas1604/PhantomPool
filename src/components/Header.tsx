@@ -24,8 +24,8 @@ export function Header() {
                 <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />
               </div>
             </div>
-            <div className="hidden xs:block">
-              <h1 className="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
+            <div>
+              <h1 className="text-sm sm:text-lg md:text-xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
                 PhantomPool
               </h1>
               <p className="text-xs sm:text-sm text-[#b4b4b4] -mt-1 hidden sm:block">Zero-Knowledge Dark Pool</p>
