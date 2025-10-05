@@ -84,38 +84,36 @@ export default function HomePage() {
         
         {/* Demo Status Bar */}
         {demoStatus && (
-          <div className="max-w-7xl mx-auto px-6 py-2">
-            <div className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 backdrop-blur-xl rounded-xl p-3 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
+            <div className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 flex items-center justify-center">
               <div className="flex items-center gap-2 text-[#00ff88]">
                 <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse" />
-                <span className="font-medium">{demoStatus}</span>
+                <span className="font-medium text-sm sm:text-base">{demoStatus}</span>
               </div>
             </div>
           </div>
         )}
         
-        <main className="max-w-7xl mx-auto px-6 py-8">
-          {/* Hero Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <div className="bg-gradient-to-br from-[#00f0ff]/10 to-[#00f0ff]/5 border border-[#00f0ff]/20 backdrop-blur-xl rounded-xl p-6 text-center">
-              <div className="text-2xl font-bold text-[#00f0ff] mb-1">256-bit</div>
-              <div className="text-sm text-[#b4b4b4]">Encryption</div>
-            </div>
-            <div className="bg-gradient-to-br from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/20 backdrop-blur-xl rounded-xl p-6 text-center">
-              <div className="text-2xl font-bold text-[#00ff88] mb-1">$2.4M</div>
-              <div className="text-sm text-[#b4b4b4]">Volume Protected</div>
-            </div>
-            <div className="bg-gradient-to-br from-[#ff00e5]/10 to-[#ff00e5]/5 border border-[#ff00e5]/20 backdrop-blur-xl rounded-xl p-6 text-center">
-              <div className="text-2xl font-bold text-[#ff00e5] mb-1">5/5</div>
-              <div className="text-sm text-[#b4b4b4]">Validators</div>
-            </div>
-            <div className="bg-gradient-to-br from-[#ffaa00]/10 to-[#ffaa00]/5 border border-[#ffaa00]/20 backdrop-blur-xl rounded-xl p-6 text-center">
-              <div className="text-2xl font-bold text-[#ffaa00] mb-1">99.9%</div>
-              <div className="text-sm text-[#b4b4b4]">MEV Protection</div>
-            </div>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 md:py-8">
+        {/* Hero Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-10 md:mb-12">
+          <div className="bg-gradient-to-br from-[#00f0ff]/10 to-[#00f0ff]/5 border border-[#00f0ff]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#00f0ff] mb-1">256-bit</div>
+            <div className="text-xs sm:text-sm text-[#b4b4b4]">Encryption</div>
           </div>
-
-          {/* Main 3-Column Trading Interface */}
+          <div className="bg-gradient-to-br from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#00ff88] mb-1">$2.4M</div>
+            <div className="text-xs sm:text-sm text-[#b4b4b4]">Volume Protected</div>
+          </div>
+          <div className="bg-gradient-to-br from-[#ff00e5]/10 to-[#ff00e5]/5 border border-[#ff00e5]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#ff00e5] mb-1">5/5</div>
+            <div className="text-xs sm:text-sm text-[#b4b4b4]">Validators</div>
+          </div>
+          <div className="bg-gradient-to-br from-[#ffaa00]/10 to-[#ffaa00]/5 border border-[#ffaa00]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#ffaa00] mb-1">99.9%</div>
+            <div className="text-xs sm:text-sm text-[#b4b4b4]">MEV Protection</div>
+          </div>
+        </div>          {/* Main 3-Column Trading Interface */}
           <ClientOnly>
             <TradingInterface 
               orders={orders}
@@ -126,7 +124,7 @@ export default function HomePage() {
           </ClientOnly>
 
           {/* Cryptographic Proofs Dashboard */}
-          <div className="mt-12">
+          <div className="mt-8 sm:mt-10 md:mt-12">
             <ClientOnly>
               <CryptoProofsDashboard />
             </ClientOnly>

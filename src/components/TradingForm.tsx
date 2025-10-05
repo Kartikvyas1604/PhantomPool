@@ -57,23 +57,23 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   const balance = 1250.00;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Token Pair Selector */}
       <Card className="bg-gradient-to-br from-white/5 to-white/10 border-[#00f0ff]/20 backdrop-blur-xl">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#00f0ff] to-[#ff00e5] rounded-full flex items-center justify-center">
-                <Coins className="w-5 h-5 text-white" />
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center justify-between flex-wrap sm:flex-nowrap gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#00f0ff] to-[#ff00e5] rounded-full flex items-center justify-center">
+                <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">SOL/USDC</h3>
-                <p className="text-sm text-[#b4b4b4]">Solana / USD Coin</p>
+                <h3 className="text-base sm:text-lg font-bold text-white">SOL/USDC</h3>
+                <p className="text-xs sm:text-sm text-[#b4b4b4]">Solana / USD Coin</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-[#00ff88]">${marketPrice}</div>
-              <div className="text-sm text-[#00ff88] flex items-center gap-1">
+              <div className="text-lg sm:text-2xl font-bold text-[#00ff88]">${marketPrice}</div>
+              <div className="text-xs sm:text-sm text-[#00ff88] flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
                 +2.34%
               </div>
@@ -84,15 +84,15 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
 
       {/* Main Trading Form */}
       <Card className="bg-gradient-to-br from-white/5 to-white/10 border-[#00f0ff]/20 backdrop-blur-xl">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-white flex items-center gap-2">
-            <div className="p-2 bg-gradient-to-br from-[#00f0ff]/20 to-[#ff00e5]/20 rounded-lg">
-              <ArrowUpDown className="w-5 h-5 text-[#00f0ff]" />
+        <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6 pt-4 sm:pt-6">
+          <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-[#00f0ff]/20 to-[#ff00e5]/20 rounded-lg">
+              <ArrowUpDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f0ff]" />
             </div>
             Order Entry
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6 pb-4 sm:pb-6">
           <Tabs value={orderType} onValueChange={(value) => setOrderType(value as 'buy' | 'sell')}>
             <TabsList className="grid w-full grid-cols-2 bg-black/40 p-1 rounded-xl">
               <TabsTrigger 
@@ -122,11 +122,11 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-20 h-12 text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
+                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <Coins className="w-5 h-5 text-[#00f0ff]" />
-                      <span className="text-white font-medium">SOL</span>
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
+                      <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f0ff]" />
+                      <span className="text-white font-medium text-sm sm:text-base">SOL</span>
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -150,11 +150,11 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder={marketPrice.toString()}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-20 h-12 text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
+                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-[#00f0ff]" />
-                      <span className="text-white font-medium">USDC</span>
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
+                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f0ff]" />
+                      <span className="text-white font-medium text-sm sm:text-base">USDC</span>
                     </div>
                   </div>
                   <div className="text-sm text-[#b4b4b4]">
@@ -165,22 +165,24 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !amount || !price}
-                  className={`w-full h-14 text-lg font-semibold transition-all duration-300 ${
+                  className={`w-full h-12 sm:h-14 text-base sm:text-lg font-semibold transition-all duration-300 ${
                     isSubmitting 
                       ? 'bg-gradient-to-r from-[#00f0ff]/50 to-[#00f0ff]/30 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/80 hover:from-[#00f0ff]/90 hover:to-[#00f0ff]/70 hover:scale-105 hover:shadow-xl hover:shadow-[#00f0ff]/25'
+                      : 'bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/80 hover:from-[#00f0ff]/90 hover:to-[#00f0ff]/70 sm:hover:scale-105 hover:shadow-xl hover:shadow-[#00f0ff]/25'
                   } text-white border-0 rounded-xl`}
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <Sparkles className="w-5 h-5 animate-pulse" />
-                      Encrypting Order...
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                      <span className="hidden sm:inline">Encrypting Order...</span>
+                      <span className="sm:hidden">Encrypting...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <Lock className="w-5 h-5" />
-                      Encrypt & Submit Buy Order
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Encrypt & Submit Buy Order</span>
+                      <span className="sm:hidden">Submit Buy</span>
                     </div>
                   )}
                 </Button>
@@ -198,11 +200,11 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-20 h-12 text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
+                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <Coins className="w-5 h-5 text-[#ff00e5]" />
-                      <span className="text-white font-medium">SOL</span>
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
+                      <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff00e5]" />
+                      <span className="text-white font-medium text-sm sm:text-base">SOL</span>
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -226,11 +228,11 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder={marketPrice.toString()}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-20 h-12 text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
+                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-[#ff00e5]" />
-                      <span className="text-white font-medium">USDC</span>
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
+                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff00e5]" />
+                      <span className="text-white font-medium text-sm sm:text-base">USDC</span>
                     </div>
                   </div>
                   <div className="text-sm text-[#b4b4b4]">
@@ -241,22 +243,24 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !amount || !price}
-                  className={`w-full h-14 text-lg font-semibold transition-all duration-300 ${
+                  className={`w-full h-12 sm:h-14 text-base sm:text-lg font-semibold transition-all duration-300 ${
                     isSubmitting 
                       ? 'bg-gradient-to-r from-[#ff00e5]/50 to-[#ff00e5]/30 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-[#ff00e5] to-[#ff00e5]/80 hover:from-[#ff00e5]/90 hover:to-[#ff00e5]/70 hover:scale-105 hover:shadow-xl hover:shadow-[#ff00e5]/25'
+                      : 'bg-gradient-to-r from-[#ff00e5] to-[#ff00e5]/80 hover:from-[#ff00e5]/90 hover:to-[#ff00e5]/70 sm:hover:scale-105 hover:shadow-xl hover:shadow-[#ff00e5]/25'
                   } text-white border-0 rounded-xl`}
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <Sparkles className="w-5 h-5 animate-pulse" />
-                      Encrypting Order...
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                      <span className="hidden sm:inline">Encrypting Order...</span>
+                      <span className="sm:hidden">Encrypting...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <Lock className="w-5 h-5" />
-                      Encrypt & Submit Sell Order
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Encrypt & Submit Sell Order</span>
+                      <span className="sm:hidden">Submit Sell</span>
                     </div>
                   )}
                 </Button>
@@ -267,9 +271,9 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
           {/* Order Preview */}
           {(amount && price) && (
             <Card className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border-[#00ff88]/30 animate-in slide-in-from-top duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-sm text-[#00ff88] mb-2">
-                  <Shield className="w-4 h-4" />
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-[#00ff88] mb-2">
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="font-medium">Order Preview (Encrypted)</span>
                 </div>
                 <div className="space-y-1 text-sm">
@@ -297,14 +301,14 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
           )}
 
           {/* Privacy Guarantee */}
-          <div className="p-4 bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 rounded-xl">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#00ff88]/20 rounded-lg">
-                <Shield className="w-5 h-5 text-[#00ff88]" />
+          <div className="p-3 sm:p-4 bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 rounded-xl">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-[#00ff88]/20 rounded-lg">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ff88]" />
               </div>
               <div>
-                <div className="text-[#00ff88] font-medium">MEV Protection Active</div>
-                <div className="text-sm text-[#b4b4b4]">Your order is encrypted and invisible to front-runners</div>
+                <div className="text-[#00ff88] font-medium text-sm sm:text-base">MEV Protection Active</div>
+                <div className="text-xs sm:text-sm text-[#b4b4b4]">Your order is encrypted and invisible to front-runners</div>
               </div>
             </div>
           </div>

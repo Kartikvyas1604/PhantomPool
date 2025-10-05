@@ -37,19 +37,19 @@ export function TradingInterface({
   onAddOrder 
 }: TradingInterfaceProps) {
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
-      {/* Left Column - Order Entry */}
-      <div className="lg:col-span-1">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Order Entry - Full width on mobile, left on larger screens */}
+      <div className="col-span-1 md:col-span-2 lg:col-span-1 order-1">
         <TradingForm onSubmitOrder={onAddOrder} />
       </div>
 
-      {/* Center Column - Order Book */}
-      <div className="lg:col-span-1">
+      {/* Order Book - Full width on mobile, right on medium, center on large */}
+      <div className="col-span-1 md:col-span-2 lg:col-span-1 order-2 md:order-3 lg:order-2">
         <OrderBookList orders={orders} isMatching={isMatching} />
       </div>
 
-      {/* Right Column - Trade Execution */}
-      <div className="lg:col-span-1">
+      {/* Trade Execution - Full width on mobile, left on medium, right on large */}
+      <div className="col-span-1 md:col-span-2 lg:col-span-1 order-3 md:order-2 lg:order-3">
         <TradeExecution matchedTrades={matchedTrades} />
       </div>
     </div>

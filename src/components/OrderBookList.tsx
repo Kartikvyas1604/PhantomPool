@@ -41,11 +41,11 @@ export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatchin
       <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/5 to-[#ff00e5]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       {/* Header */}
-      <div className="p-6 border-b border-white/10 relative z-10">
+      <div className="p-3 sm:p-6 border-b border-white/10 relative z-10">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="text-white mb-1">Encrypted Order Book</h3>
-            <p className="text-[#b4b4b4] text-sm">Homomorphically encrypted orders</p>
+            <h3 className="text-white mb-1 text-base sm:text-lg">Encrypted Order Book</h3>
+            <p className="text-[#b4b4b4] text-xs sm:text-sm">Homomorphically encrypted orders</p>
           </div>
           {shuffling && (
             <motion.div
@@ -71,10 +71,10 @@ export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatchin
       <div className="relative z-10 max-h-[600px] overflow-y-auto">
         <AnimatePresence mode="popLayout">
           {displayOrders.length === 0 ? (
-            <div className="p-12 text-center">
-              <Lock className="w-12 h-12 text-white/20 mx-auto mb-4" />
-              <p className="text-[#b4b4b4]">No encrypted orders yet</p>
-              <p className="text-[#b4b4b4]/70 text-sm mt-1">Submit your first order to get started</p>
+            <div className="p-6 sm:p-12 text-center">
+              <Lock className="w-8 h-8 sm:w-12 sm:h-12 text-white/20 mx-auto mb-3 sm:mb-4" />
+              <p className="text-[#b4b4b4] text-sm sm:text-base">No encrypted orders yet</p>
+              <p className="text-[#b4b4b4]/70 text-xs sm:text-sm mt-1">Submit your first order to get started</p>
             </div>
           ) : (
             displayOrders.map((order, index) => (
@@ -85,15 +85,15 @@ export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatchin
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
-                className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors ${
+                className={`p-3 sm:p-4 border-b border-white/5 hover:bg-white/5 transition-colors ${
                   order.status === 'matched' ? 'bg-[#00ff88]/5' : ''
                 }`}
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-2 sm:mb-3">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
                       <Lock className="w-3 h-3 text-[#00f0ff]" />
-                      <span className="text-white text-sm">{order.trader}</span>
+                      <span className="text-white text-xs sm:text-sm">{order.trader}</span>
                       <Badge
                         variant="outline"
                         className={`${
@@ -107,30 +107,31 @@ export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatchin
                     </div>
                     
                     {/* Encrypted Amount */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[#b4b4b4] text-xs">Encrypted Size:</span>
-                      <span className="text-white/30 text-sm font-mono">█████████</span>
+                    <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                      <span className="text-[#b4b4b4] text-xs">Size:</span>
+                      <span className="text-white/30 text-xs sm:text-sm font-mono">█████████</span>
                     </div>
 
                     {/* Order Hash */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-white/70 text-xs font-mono">{order.encrypted}</span>
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <span className="text-white/70 text-xs font-mono truncate max-w-[120px] sm:max-w-none">{order.encrypted}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => copyToClipboard(order.encrypted)}
-                        className="h-6 w-6 p-0 hover:bg-white/10"
+                        className="h-5 w-5 sm:h-6 sm:w-6 p-0 hover:bg-white/10 flex-shrink-0"
                       >
-                        <Copy className="w-3 h-3 text-[#b4b4b4]" />
+                        <Copy className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#b4b4b4]" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col items-end gap-1 sm:gap-2 ml-2">
                     {/* ZK Proof Status */}
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse" />
-                      <span className="text-[#00ff88] text-xs">ZK-Verified</span>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#00ff88] rounded-full animate-pulse" />
+                      <span className="text-[#00ff88] text-xs hidden sm:inline">ZK-Verified</span>
+                      <span className="text-[#00ff88] text-xs sm:hidden">✓</span>
                     </div>
 
                     {/* Status Badge */}
@@ -158,15 +159,16 @@ export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatchin
 
       {/* Footer */}
       {displayOrders.length > 0 && (
-        <div className="p-4 border-t border-white/10 bg-white/5 relative z-10">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
+        <div className="p-3 sm:p-4 border-t border-white/10 bg-white/5 relative z-10">
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <div>
-                <span className="text-[#b4b4b4]">Total Orders: </span>
+                <span className="text-[#b4b4b4]">Orders: </span>
                 <span className="text-white">{displayOrders.length}</span>
               </div>
               <div>
-                <span className="text-[#b4b4b4]">Encrypted Volume: </span>
+                <span className="text-[#b4b4b4] hidden sm:inline">Encrypted Volume: </span>
+                <span className="text-[#b4b4b4] sm:hidden">Vol: </span>
                 <span className="text-white/30 font-mono">████ SOL</span>
               </div>
             </div>

@@ -71,12 +71,12 @@ export function CryptoProofsDashboard() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-white mb-2">Cryptographic Proofs Dashboard</h2>
-        <p className="text-[#b4b4b4]">Real-time verification of all security guarantees</p>
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-white mb-1 sm:mb-2 text-lg sm:text-xl">Cryptographic Proofs Dashboard</h2>
+        <p className="text-[#b4b4b4] text-sm sm:text-base">Real-time verification of all security guarantees</p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {proofs.map((proof, index) => (
           <motion.div
             key={proof.title}
@@ -88,7 +88,7 @@ export function CryptoProofsDashboard() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div>
-                    <Card className={`bg-white/5 border ${proof.borderColor} backdrop-blur-xl p-6 relative overflow-hidden group hover:border-opacity-60 transition-all duration-300 cursor-pointer`}>
+                    <Card className={`bg-white/5 border ${proof.borderColor} backdrop-blur-xl p-3 sm:p-6 relative overflow-hidden group hover:border-opacity-60 transition-all duration-300 cursor-pointer`}>
                       {/* Animated glow */}
                       <motion.div
                         className={`absolute inset-0 bg-gradient-to-br ${proof.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
@@ -104,26 +104,27 @@ export function CryptoProofsDashboard() {
 
                       <div className="relative z-10">
                         {/* Icon and Status */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className={`bg-gradient-to-br ${proof.color} p-3 rounded-lg shadow-lg`}>
-                            <proof.icon className="w-6 h-6 text-white" />
+                        <div className="flex items-start justify-between mb-3 sm:mb-4">
+                          <div className={`bg-gradient-to-br ${proof.color} p-2 sm:p-3 rounded-lg shadow-lg`}>
+                            <proof.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse" />
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#00ff88] rounded-full animate-pulse" />
                             <span className="text-[#00ff88] text-xs">{proof.status}</span>
                           </div>
                         </div>
 
                         {/* Title and Description */}
-                        <div className="mb-4">
-                          <h3 className="text-white mb-1">{proof.title}</h3>
-                          <p className="text-[#b4b4b4] text-sm">{proof.description}</p>
+                        <div className="mb-3 sm:mb-4">
+                          <h3 className="text-white mb-1 text-sm sm:text-base font-medium">{proof.title}</h3>
+                          <p className="text-[#b4b4b4] text-xs sm:text-sm">{proof.description}</p>
                         </div>
 
                         {/* Info Icon */}
-                        <div className="flex items-center gap-2 text-[#00f0ff] text-xs">
-                          <Info className="w-3 h-3" />
-                          <span>Hover for details</span>
+                        <div className="flex items-center gap-1 sm:gap-2 text-[#00f0ff] text-xs">
+                          <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          <span className="hidden sm:inline">Hover for details</span>
+                          <span className="sm:hidden">Details</span>
                         </div>
                       </div>
                     </Card>
