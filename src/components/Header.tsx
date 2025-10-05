@@ -1,4 +1,3 @@
-
 'use client';
 // Extend Window type for wallet detection
 declare global {
@@ -164,9 +163,23 @@ export function Header() {
     setConnecting(true);
     setShowWalletModal(false);
     try {
-      if (walletId === 'phantom' && typeof window !== 'undefined' && window.solana?.isPhantom) {
-        const resp = await window.solana.connect();
-        setWallet(resp?.publicKey?.toString() || null);
+      if (walletId === 'phantom') {
+        if (typeof window !== 'undefined' && window.solana?.isPhantom) {
+          try {
+            const resp = await window.solana.connect();
+            setWallet(resp?.publicKey?.toString() || null);
+          } catch (err) {
+            alert('Phantom connection failed.');
+          }
+        } else if (isMobile()) {
+          // On mobile, try deep link
+          window.location.href = 'phantom://';
+          setTimeout(() => {
+            window.open('https://phantom.app/download', '_blank');
+          }, 1500);
+        } else {
+          alert('Phantom extension not detected. Please install Phantom.');
+        }
         return;
       }
       if (walletId === 'backpack' && typeof window !== 'undefined' && window.backpack && typeof window.backpack.connect === 'function') {
@@ -298,12 +311,17 @@ export function Header() {
                     <DialogDescription className="text-[#b4b4b4] mb-6">Choose a wallet to connect:</DialogDescription>
                     <div className="flex flex-col gap-3">
                       {availableWallets.length === 0 && (
-                        <div className="text-[#ff00e5] text-center">No supported wallets found on this device.</div>
+                        <div className="text-[#ff00e5] text-center">No Solana wallet extension detected.<br/>Please install Phantom or another supported wallet.</div>
                       )}
                       {availableWallets.map(w => (
-                        <Button key={w.id} onClick={() => connectWallet(w.id)} className="flex items-center gap-3 bg-[#18122b] hover:bg-[#232136] text-white px-4 py-2 rounded-xl font-medium text-base transition-all duration-200">
+                        <Button
+                          key={w.id}
+                          onClick={() => connectWallet(w.id)}
+                          className="flex items-center justify-center gap-2 bg-[#18122b] hover:bg-[#232136] text-white px-6 py-2 rounded-xl font-medium text-base transition-all duration-200 w-auto min-w-[160px] mx-auto"
+                          style={{ minWidth: 160 }}
+                        >
                           <img src={w.icon} alt={w.name} className="w-6 h-6" />
-                          <span>{w.name}</span>
+                          <span className="truncate text-center w-full">{w.name}</span>
                         </Button>
                       ))}
                     </div>
