@@ -1,4 +1,13 @@
+// Extend Window type for wallet detection
+declare global {
+  interface Window {
+    solflare?: any;
+    backpack?: any;
+    ethereum?: any;
+  }
+}
 'use client';
+
 
 
 import { Wallet, Activity, Zap } from 'lucide-react';
@@ -8,51 +17,194 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogDescription } from './ui/dialog';
 
+const WALLET_LIST = [
+  {
+    name: 'Phantom',
+    id: 'phantom',
+    icon: '/wallets/phantom.svg',
+    deepLink: 'phantom://',
+    installUrl: 'https://phantom.app/download',
+    isAvailable: () => typeof window !== 'undefined' && window.solana?.isPhantom,
+    isMobile: true,
+  },
+  {
+    name: 'Solflare',
+    id: 'solflare',
+    icon: '/wallets/solflare.svg',
+    deepLink: 'solflare://',
+    installUrl: 'https://solflare.com/download',
+    isAvailable: () => typeof window !== 'undefined' && window.solflare,
+    isMobile: true,
+  },
+  {
+    name: 'Ledger',
+    id: 'ledger',
+    icon: '/wallets/ledger.svg',
+    deepLink: 'ledgerlive://',
+    installUrl: 'https://www.ledger.com/ledger-live/download',
+    isAvailable: () => false, // browser extension not supported
+    isMobile: false,
+  },
+  {
+    name: 'Exodus',
+    id: 'exodus',
+    icon: '/wallets/exodus.svg',
+    deepLink: 'exodus://',
+    installUrl: 'https://www.exodus.com/download/',
+    isAvailable: () => false, // browser extension not supported
+    isMobile: true,
+  },
+  {
+    name: 'Torus Wallet',
+    id: 'torus',
+    icon: '/wallets/torus.svg',
+    deepLink: 'torus://',
+    installUrl: 'https://tor.us/',
+    isAvailable: () => false,
+    isMobile: true,
+  },
+  {
+    name: 'Backpack',
+    id: 'backpack',
+    icon: '/wallets/backpack.svg',
+    deepLink: 'backpack://',
+    installUrl: 'https://backpack.app/download',
+    isAvailable: () => typeof window !== 'undefined' && window.backpack,
+    isMobile: true,
+  },
+  // MetaMask is not a Solana wallet, only show for Ethereum
+  {
+    name: 'MetaMask',
+    id: 'metamask',
+    icon: '/wallets/metamask.svg',
+    deepLink: 'metamask://',
+    installUrl: 'https://metamask.io/download/',
+    isAvailable: () => typeof window !== 'undefined' && window.ethereum?.isMetaMask,
+    isMobile: true,
+    isEthereum: true,
+  },
+];
+
+function isMobile() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+
 
 export function Header() {
-  const [wallet, setWallet] = useState<string | null>(null)
-  const [connecting, setConnecting] = useState(false)
-  const [showDisconnect, setShowDisconnect] = useState(false)
+
+  const [wallet, setWallet] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [showDisconnect, setShowDisconnect] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [availableWallets, setAvailableWallets] = useState(WALLET_LIST);
+
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.solana?.isPhantom) {
-      window.solana?.on('connect', () => {
-        setWallet(window.solana?.publicKey?.toString() || null)
-      })
-      window.solana?.on('disconnect', () => {
-        setWallet(null)
-      })
-      if (window.solana?.isConnected) {
-        setWallet(window.solana?.publicKey?.toString() || null)
+    // Listen for connect/disconnect for Phantom and Backpack
+    if (typeof window !== 'undefined') {
+      if (window.solana?.isPhantom) {
+        window.solana?.on('connect', () => {
+          setWallet(window.solana?.publicKey?.toString() || null);
+        });
+        window.solana?.on('disconnect', () => {
+          setWallet(null);
+        });
+        if (window.solana?.isConnected) {
+          setWallet(window.solana?.publicKey?.toString() || null);
+        }
+      }
+      if (window.backpack) {
+        window.backpack.on('connect', () => {
+          setWallet(window.backpack.publicKey?.toString() || null);
+        });
+        window.backpack.on('disconnect', () => {
+          setWallet(null);
+        });
+        if (window.backpack.isConnected) {
+          setWallet(window.backpack.publicKey?.toString() || null);
+        }
       }
     }
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    // Filter wallets by availability and platform
+    let filtered = WALLET_LIST.filter(w => {
+      // Only show MetaMask if user is on Ethereum network (not Solana)
+      if (w.id === 'metamask') return false;
+      if (isMobile()) {
+        return w.isMobile && (w.isAvailable() || w.deepLink);
+      } else {
+        return w.isAvailable();
+      }
+    });
+    setAvailableWallets(filtered);
+  }, []);
+
 
   const connect = async () => {
-    setConnecting(true)
+    setShowWalletModal(true);
+  };
+
+  const connectWallet = async (walletId: string) => {
+    setConnecting(true);
+    setShowWalletModal(false);
     try {
-      if (typeof window !== 'undefined' && window.solana?.isPhantom) {
-        const resp = await window.solana?.connect()
-        setWallet(resp?.publicKey?.toString() || null)
-      } else {
-        window.open('https://phantom.app/', '_blank')
+      if (walletId === 'phantom' && typeof window !== 'undefined' && window.solana?.isPhantom) {
+        const resp = await window.solana.connect();
+        setWallet(resp?.publicKey?.toString() || null);
+        return;
+      }
+      if (walletId === 'backpack' && typeof window !== 'undefined' && window.backpack) {
+        const resp = await window.backpack.connect();
+        setWallet(resp?.publicKey?.toString() || null);
+        return;
+      }
+      if (walletId === 'metamask' && typeof window !== 'undefined' && window.ethereum?.isMetaMask) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setWallet(accounts[0] || null);
+        return;
+      }
+      // For mobile: try deep link, else open install page
+      const selected = WALLET_LIST.find(w => w.id === walletId);
+      if (isMobile() && selected) {
+        // Try to open the app via deep link
+        window.location.href = selected.deepLink;
+        setTimeout(() => {
+          window.open(selected.installUrl, '_blank');
+        }, 1500);
+        return;
+      }
+      // Fallback: open install page
+      if (selected) {
+        window.open(selected.installUrl, '_blank');
       }
     } finally {
-      setConnecting(false)
+      setConnecting(false);
     }
-  }
+  };
+
 
   const disconnect = async () => {
-    setShowDisconnect(true)
-  }
+    setShowDisconnect(true);
+  };
+
 
   const confirmDisconnect = async () => {
-    setShowDisconnect(false)
+    setShowDisconnect(false);
     if (typeof window !== 'undefined' && window.solana?.isPhantom) {
-      await window.solana?.disconnect()
-      setWallet(null)
+      await window.solana.disconnect();
+      setWallet(null);
     }
-  }
+    if (typeof window !== 'undefined' && window.backpack) {
+      await window.backpack.disconnect();
+      setWallet(null);
+    }
+    if (typeof window !== 'undefined' && window.ethereum?.isMetaMask) {
+      setWallet(null);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#00f0ff]/20 bg-gradient-to-r from-[#0a0118]/95 via-[#1a0b2e]/95 to-[#0a0118]/95 backdrop-blur-xl w-full min-w-0">
@@ -123,11 +275,31 @@ export function Header() {
                 </Dialog>
               </div>
             ) : (
-              <Button onClick={connect} disabled={connecting} className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25 text-xs xs:text-sm sm:text-base w-full xs:w-auto">
-                <Wallet className="w-4 h-4 xs:mr-2" />
-                <span className="hidden xs:inline">{connecting ? 'Connecting...' : 'Connect Wallet'}</span>
-                <span className="xs:hidden ml-1">{connecting ? '...' : 'Connect'}</span>
-              </Button>
+              <>
+                <Button onClick={connect} disabled={connecting} className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25 text-xs xs:text-sm sm:text-base w-full xs:w-auto">
+                  <Wallet className="w-4 h-4 xs:mr-2" />
+                  <span className="hidden xs:inline">{connecting ? 'Connecting...' : 'Connect Wallet'}</span>
+                  <span className="xs:hidden ml-1">{connecting ? '...' : 'Connect'}</span>
+                </Button>
+                <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
+                  <DialogOverlay className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn" />
+                  <DialogContent className="bg-gradient-to-br from-[#1a0b2e] to-[#0a0118] border border-[#00f0ff]/30 rounded-2xl shadow-2xl p-8 max-w-sm mx-auto animate-scaleIn">
+                    <DialogTitle className="text-lg font-semibold text-white mb-2">Select Wallet</DialogTitle>
+                    <DialogDescription className="text-[#b4b4b4] mb-6">Choose a wallet to connect:</DialogDescription>
+                    <div className="flex flex-col gap-3">
+                      {availableWallets.length === 0 && (
+                        <div className="text-[#ff00e5] text-center">No supported wallets found on this device.</div>
+                      )}
+                      {availableWallets.map(w => (
+                        <Button key={w.id} onClick={() => connectWallet(w.id)} className="flex items-center gap-3 bg-[#18122b] hover:bg-[#232136] text-white px-4 py-2 rounded-xl font-medium text-base transition-all duration-200">
+                          <img src={w.icon} alt={w.name} className="w-6 h-6" />
+                          <span>{w.name}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
           </div>
         </div>
