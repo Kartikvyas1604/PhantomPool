@@ -1,12 +1,22 @@
+
+'use client';
 // Extend Window type for wallet detection
 declare global {
   interface Window {
-    solflare?: any;
-    backpack?: any;
-    ethereum?: any;
+    solflare?: unknown;
+    backpack?: {
+      publicKey?: { toString(): string };
+      isConnected?: boolean;
+      connect?: () => Promise<{ publicKey?: { toString(): string } }>;
+      disconnect?: () => Promise<void>;
+      on?: (event: string, handler: () => void) => void;
+    };
+    ethereum?: {
+      isMetaMask?: boolean;
+      request?: (args: { method: string }) => Promise<string[]>;
+    };
   }
 }
-'use client';
 
 
 
@@ -115,12 +125,14 @@ export function Header() {
         }
       }
       if (window.backpack) {
-        window.backpack.on('connect', () => {
-          setWallet(window.backpack.publicKey?.toString() || null);
-        });
-        window.backpack.on('disconnect', () => {
-          setWallet(null);
-        });
+        if (typeof window.backpack.on === 'function') {
+          window.backpack.on('connect', () => {
+            setWallet(window.backpack?.publicKey?.toString() || null);
+          });
+          window.backpack.on('disconnect', () => {
+            setWallet(null);
+          });
+        }
         if (window.backpack.isConnected) {
           setWallet(window.backpack.publicKey?.toString() || null);
         }
@@ -130,7 +142,7 @@ export function Header() {
 
   useEffect(() => {
     // Filter wallets by availability and platform
-    let filtered = WALLET_LIST.filter(w => {
+    const filtered = WALLET_LIST.filter(w => {
       // Only show MetaMask if user is on Ethereum network (not Solana)
       if (w.id === 'metamask') return false;
       if (isMobile()) {
@@ -156,12 +168,12 @@ export function Header() {
         setWallet(resp?.publicKey?.toString() || null);
         return;
       }
-      if (walletId === 'backpack' && typeof window !== 'undefined' && window.backpack) {
+      if (walletId === 'backpack' && typeof window !== 'undefined' && window.backpack && typeof window.backpack.connect === 'function') {
         const resp = await window.backpack.connect();
         setWallet(resp?.publicKey?.toString() || null);
         return;
       }
-      if (walletId === 'metamask' && typeof window !== 'undefined' && window.ethereum?.isMetaMask) {
+      if (walletId === 'metamask' && typeof window !== 'undefined' && window.ethereum?.isMetaMask && typeof window.ethereum.request === 'function') {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setWallet(accounts[0] || null);
         return;
@@ -197,7 +209,7 @@ export function Header() {
       await window.solana.disconnect();
       setWallet(null);
     }
-    if (typeof window !== 'undefined' && window.backpack) {
+    if (typeof window !== 'undefined' && window.backpack && typeof window.backpack.disconnect === 'function') {
       await window.backpack.disconnect();
       setWallet(null);
     }
