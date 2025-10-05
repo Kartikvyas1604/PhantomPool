@@ -20,9 +20,6 @@ export function Header() {
                 height={48}
                 className="filter drop-shadow-lg sm:w-16 sm:h-16 md:w-[72px] md:h-[72px]"
               />
-              <div className="absolute top-1 right-1 w-3 h-3 sm:w-4 sm:h-4 bg-[#00ff88] rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-[#00ff88]/50">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />
-              </div>
             </div>
             <div>
               <h1 className="text-sm sm:text-lg md:text-xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
