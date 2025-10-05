@@ -1,22 +1,4 @@
 'use client';
-// Extend Window type for wallet detection
-declare global {
-  interface Window {
-    solflare?: unknown;
-    backpack?: {
-      publicKey?: { toString(): string };
-      isConnected?: boolean;
-      connect?: () => Promise<{ publicKey?: { toString(): string } }>;
-      disconnect?: () => Promise<void>;
-      on?: (event: string, handler: () => void) => void;
-    };
-    ethereum?: {
-      isMetaMask?: boolean;
-      request?: (args: { method: string }) => Promise<string[]>;
-    };
-  }
-}
-
 
 
 import { Wallet, Activity, Zap } from 'lucide-react';
@@ -30,7 +12,7 @@ const WALLET_LIST = [
   {
     name: 'Phantom',
     id: 'phantom',
-    icon: '/wallets/phantom.svg',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzRDMUQ5NSIvPgo8cGF0aCBkPSJNOCAyMEMxMiAxNiAyMCAxNiAyNCAyMFYxMkM2IDEyIDYgMjAgOCAyMFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=',
     deepLink: 'phantom://',
     installUrl: 'https://phantom.app/download',
     isAvailable: () => typeof window !== 'undefined' && window.solana?.isPhantom,
@@ -39,7 +21,7 @@ const WALLET_LIST = [
   {
     name: 'Solflare',
     id: 'solflare',
-    icon: '/wallets/solflare.svg',
+    icon: 'https://solflare.com/favicon.ico',
     deepLink: 'solflare://',
     installUrl: 'https://solflare.com/download',
     isAvailable: () => typeof window !== 'undefined' && window.solflare,
@@ -48,7 +30,7 @@ const WALLET_LIST = [
   {
     name: 'Ledger',
     id: 'ledger',
-    icon: '/wallets/ledger.svg',
+    icon: 'https://www.ledger.com/favicon.ico',
     deepLink: 'ledgerlive://',
     installUrl: 'https://www.ledger.com/ledger-live/download',
     isAvailable: () => false, // browser extension not supported
@@ -57,7 +39,7 @@ const WALLET_LIST = [
   {
     name: 'Exodus',
     id: 'exodus',
-    icon: '/wallets/exodus.svg',
+    icon: 'https://www.exodus.com/favicon.ico',
     deepLink: 'exodus://',
     installUrl: 'https://www.exodus.com/download/',
     isAvailable: () => false, // browser extension not supported
@@ -66,7 +48,7 @@ const WALLET_LIST = [
   {
     name: 'Torus Wallet',
     id: 'torus',
-    icon: '/wallets/torus.svg',
+    icon: 'https://tor.us/favicon.ico',
     deepLink: 'torus://',
     installUrl: 'https://tor.us/',
     isAvailable: () => false,
@@ -75,7 +57,7 @@ const WALLET_LIST = [
   {
     name: 'Backpack',
     id: 'backpack',
-    icon: '/wallets/backpack.svg',
+    icon: 'https://www.backpack.app/favicon.ico',
     deepLink: 'backpack://',
     installUrl: 'https://backpack.app/download',
     isAvailable: () => typeof window !== 'undefined' && window.backpack,
@@ -160,24 +142,35 @@ export function Header() {
   };
 
   const connectWallet = async (walletId: string) => {
+    console.log('🔗 Connecting to wallet:', walletId);
+    console.log('🌐 Window object:', typeof window);
+    console.log('👻 Phantom available:', typeof window !== 'undefined' && window.solana?.isPhantom);
+    console.log('📱 Is mobile:', isMobile());
+    
     setConnecting(true);
     setShowWalletModal(false);
     try {
       if (walletId === 'phantom') {
         if (typeof window !== 'undefined' && window.solana?.isPhantom) {
+          console.log('✅ Phantom detected, attempting connection...');
           try {
             const resp = await window.solana.connect();
+            console.log('🔑 Connection response:', resp);
             setWallet(resp?.publicKey?.toString() || null);
+            console.log('✅ Wallet connected successfully!');
           } catch (err) {
-            alert('Phantom connection failed.');
+            console.error('❌ Phantom connection error:', err);
+            alert('Phantom connection failed: ' + (err instanceof Error ? err.message : String(err)));
           }
         } else if (isMobile()) {
+          console.log('📱 Mobile detected, redirecting to Phantom app...');
           // On mobile, try deep link
           window.location.href = 'phantom://';
           setTimeout(() => {
             window.open('https://phantom.app/download', '_blank');
           }, 1500);
         } else {
+          console.log('❌ Phantom extension not detected');
           alert('Phantom extension not detected. Please install Phantom.');
         }
         return;
@@ -268,12 +261,8 @@ export function Header() {
             {wallet ? (
               <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full max-w-xs xs:max-w-none">
                 <Button
-                  onClick={e => {
-                    if (window.innerWidth < 640) disconnect();
-                  }}
-                  disabled={window.innerWidth >= 640}
-                  className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium text-xs xs:text-sm sm:text-base cursor-pointer truncate w-full xs:w-auto sm:cursor-default opacity-90 sm:opacity-90"
-                  style={window.innerWidth < 640 ? { pointerEvents: 'auto' } : {}}
+                  onClick={disconnect}
+                  className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium text-xs xs:text-sm sm:text-base cursor-pointer truncate w-full xs:w-auto transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25"
                 >
                   <Wallet className="w-4 h-4 xs:mr-2" />
                   <span className="hidden xs:inline">{wallet.slice(0, 4)}...{wallet.slice(-4)}</span>
