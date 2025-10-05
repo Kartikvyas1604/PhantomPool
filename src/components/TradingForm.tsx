@@ -2,189 +2,305 @@
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Card } from './ui/card';
+import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Button } from './ui/button';
-import { Lock, TrendingUp, TrendingDown } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
+import { ArrowUpDown, DollarSign, Coins, Lock, Shield, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 
-export function TradingForm({ onSubmit }: { onSubmit: (order: any) => void }) {
+interface TradingFormProps {
+  onSubmitOrder: (order: any) => void;
+}
+
+export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   const [orderType, setOrderType] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
-  const [encrypting, setEncrypting] = useState(false);
-  const [encryptedPreview, setEncryptedPreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEncrypting(true);
-    
-    // Simulate encryption
+    if (!amount || !price) return;
+
+    setIsSubmitting(true);
+
+    // Simulate encryption animation
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Generate consistent hash based on timestamp and form data to avoid hydration issues
-    const timestamp = Date.now();
-    const hash1 = (timestamp % 10000).toString(36);
-    const hash2 = ((timestamp + parseInt(amount || '0')) % 10000).toString(36);
-    const encryptedHash = `ElG:${hash1}...${hash2}`;
-    setEncryptedPreview(encryptedHash);
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    onSubmit({
-      trader: `Whale #${(timestamp % 100) + 1}`,
+
+    const order = {
+      type: orderType,
       amount: `${amount} SOL`,
       price: price,
-      encrypted: encryptedHash,
-      type: orderType,
-    });
-    
-    setEncrypting(false);
+      trader: `Whale #${Math.floor(Math.random() * 100) + 1}`,
+      encrypted: `ElG:${Array.from({length: 4}, () => Math.random().toString(36).charAt(2)).join('')}...${Array.from({length: 4}, () => Math.random().toString(36).charAt(2)).join('')}`,
+      status: 'pending'
+    };
+
+    onSubmitOrder(order);
     setAmount('');
     setPrice('');
-    setEncryptedPreview(null);
+    setIsSubmitting(false);
   };
 
+  const marketPrice = 149.50;
+  const balance = 1250.00;
+
   return (
-    <Card className="bg-white/5 border border-[#00f0ff]/20 backdrop-blur-xl p-6 relative overflow-hidden group hover:border-[#00f0ff]/40 transition-all duration-300">
-      {/* Glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/5 to-[#ff00e5]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-white mb-1">Order Entry</h3>
-            <p className="text-[#b4b4b4] text-sm">SOL/USDC</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-[#b4b4b4]">
-            <Lock className="w-4 h-4 text-[#00f0ff]" />
-            <span>MEV Protected</span>
-          </div>
-        </div>
-
-        {/* Order Type Tabs */}
-        <div className="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 rounded-lg">
-          <button
-            onClick={() => setOrderType('buy')}
-            className={`py-2.5 rounded-md transition-all duration-300 ${
-              orderType === 'buy'
-                ? 'bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/80 text-white shadow-lg shadow-[#00f0ff]/20'
-                : 'text-[#b4b4b4] hover:text-white'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Buy
-            </div>
-          </button>
-          <button
-            onClick={() => setOrderType('sell')}
-            className={`py-2.5 rounded-md transition-all duration-300 ${
-              orderType === 'sell'
-                ? 'bg-gradient-to-r from-[#ff00e5] to-[#ff00e5]/80 text-white shadow-lg shadow-[#ff00e5]/20'
-                : 'text-[#b4b4b4] hover:text-white'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <TrendingDown className="w-4 h-4" />
-              Sell
-            </div>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-[#b4b4b4]">Amount (SOL)</Label>
-              <span className="text-[#b4b4b4] text-xs">Balance: 1,234.56 SOL</span>
-            </div>
-            <Input
-              type="number"
-              placeholder="100"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="bg-white/5 border-[#00f0ff]/20 text-white placeholder:text-white/30 focus:border-[#00f0ff]/50 transition-colors"
-              required
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-[#b4b4b4]">Limit Price (USDC)</Label>
-              <span className="text-[#00ff88] text-xs">Market: $150.23</span>
-            </div>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="150.00"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="bg-white/5 border-[#00f0ff]/20 text-white placeholder:text-white/30 focus:border-[#00f0ff]/50 transition-colors"
-              required
-            />
-          </div>
-
-          {/* Encrypted Preview */}
-          {encryptedPreview && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-[#00ff88]/10 border border-[#00ff88]/30 rounded-lg p-4"
-            >
-              <p className="text-[#00ff88] text-sm mb-2">🔒 Order Encrypted</p>
-              <p className="text-white/70 text-xs font-mono break-all">{encryptedPreview}</p>
-            </motion.div>
-          )}
-
-          {/* Privacy Guarantee */}
-          <div className="bg-[#00f0ff]/10 border border-[#00f0ff]/30 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-[#00f0ff] mt-0.5 flex-shrink-0" />
+    <div className="space-y-6">
+      {/* Token Pair Selector */}
+      <Card className="bg-gradient-to-br from-white/5 to-white/10 border-[#00f0ff]/20 backdrop-blur-xl">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#00f0ff] to-[#ff00e5] rounded-full flex items-center justify-center">
+                <Coins className="w-5 h-5 text-white" />
+              </div>
               <div>
-                <p className="text-[#00f0ff] text-sm mb-1">ElGamal Encryption</p>
-                <p className="text-[#00f0ff]/70 text-xs leading-relaxed">
-                  Your order is homomorphically encrypted. MEV bots and other traders cannot see your order details until execution.
-                </p>
+                <h3 className="text-lg font-bold text-white">SOL/USDC</h3>
+                <p className="text-sm text-[#b4b4b4]">Solana / USD Coin</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-[#00ff88]">${marketPrice}</div>
+              <div className="text-sm text-[#00ff88] flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                +2.34%
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <Button
-            type="submit"
-            disabled={encrypting || !amount || !price}
-            className={`w-full ${
-              orderType === 'buy'
-                ? 'bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/80 hover:from-[#00f0ff]/90 hover:to-[#00f0ff]/70'
-                : 'bg-gradient-to-r from-[#ff00e5] to-[#ff00e5]/80 hover:from-[#ff00e5]/90 hover:to-[#ff00e5]/70'
-            } text-white border-0 shadow-lg ${
-              orderType === 'buy' ? 'shadow-[#00f0ff]/20' : 'shadow-[#ff00e5]/20'
-            }`}
-          >
-            {encrypting ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="flex items-center gap-2"
+      {/* Main Trading Form */}
+      <Card className="bg-gradient-to-br from-white/5 to-white/10 border-[#00f0ff]/20 backdrop-blur-xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-white flex items-center gap-2">
+            <div className="p-2 bg-gradient-to-br from-[#00f0ff]/20 to-[#ff00e5]/20 rounded-lg">
+              <ArrowUpDown className="w-5 h-5 text-[#00f0ff]" />
+            </div>
+            Order Entry
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Tabs value={orderType} onValueChange={(value) => setOrderType(value as 'buy' | 'sell')}>
+            <TabsList className="grid w-full grid-cols-2 bg-black/40 p-1 rounded-xl">
+              <TabsTrigger 
+                value="buy" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00f0ff]/20 data-[state=active]:to-[#00f0ff]/10 data-[state=active]:text-[#00f0ff] text-[#b4b4b4] rounded-lg transition-all duration-300"
               >
-                <Lock className="w-4 h-4" />
-                Encrypting Order...
-              </motion.div>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 mr-2" />
-                Encrypt & Submit Order
-              </>
-            )}
-          </Button>
-        </form>
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Buy
+              </TabsTrigger>
+              <TabsTrigger 
+                value="sell"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ff00e5]/20 data-[state=active]:to-[#ff00e5]/10 data-[state=active]:text-[#ff00e5] text-[#b4b4b4] rounded-lg transition-all duration-300"
+              >
+                <TrendingDown className="w-4 h-4 mr-2" />
+                Sell
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Network Fee */}
-        <div className="mt-6 pt-6 border-t border-white/10 flex items-center justify-between text-sm">
-          <span className="text-[#b4b4b4]">Network Fee</span>
-          <span className="text-white">0.0001 SOL</span>
-        </div>
-      </div>
-    </Card>
+            <TabsContent value="buy" className="space-y-6 mt-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="amount" className="text-[#b4b4b4] text-sm font-medium">Amount</Label>
+                  <div className="relative group">
+                    <Input
+                      id="amount"
+                      type="number"
+                      placeholder="0.00"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-20 h-12 text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <Coins className="w-5 h-5 text-[#00f0ff]" />
+                      <span className="text-white font-medium">SOL</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#b4b4b4]">Balance: {balance.toLocaleString()} SOL</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setAmount(balance.toString())}
+                      className="text-[#00f0ff] hover:text-[#00f0ff]/80 transition-colors"
+                    >
+                      MAX
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="price" className="text-[#b4b4b4] text-sm font-medium">Price</Label>
+                  <div className="relative group">
+                    <Input
+                      id="price"
+                      type="number"
+                      placeholder={marketPrice.toString()}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-20 h-12 text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[#00f0ff]" />
+                      <span className="text-white font-medium">USDC</span>
+                    </div>
+                  </div>
+                  <div className="text-sm text-[#b4b4b4]">
+                    Market Price: ${marketPrice}
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting || !amount || !price}
+                  className={`w-full h-14 text-lg font-semibold transition-all duration-300 ${
+                    isSubmitting 
+                      ? 'bg-gradient-to-r from-[#00f0ff]/50 to-[#00f0ff]/30 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/80 hover:from-[#00f0ff]/90 hover:to-[#00f0ff]/70 hover:scale-105 hover:shadow-xl hover:shadow-[#00f0ff]/25'
+                  } text-white border-0 rounded-xl`}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <Sparkles className="w-5 h-5 animate-pulse" />
+                      Encrypting Order...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <Lock className="w-5 h-5" />
+                      Encrypt & Submit Buy Order
+                    </div>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="sell" className="space-y-6 mt-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="sell-amount" className="text-[#b4b4b4] text-sm font-medium">Amount</Label>
+                  <div className="relative group">
+                    <Input
+                      id="sell-amount"
+                      type="number"
+                      placeholder="0.00"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-20 h-12 text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <Coins className="w-5 h-5 text-[#ff00e5]" />
+                      <span className="text-white font-medium">SOL</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#b4b4b4]">Balance: {balance.toLocaleString()} SOL</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setAmount(balance.toString())}
+                      className="text-[#ff00e5] hover:text-[#ff00e5]/80 transition-colors"
+                    >
+                      MAX
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="sell-price" className="text-[#b4b4b4] text-sm font-medium">Price</Label>
+                  <div className="relative group">
+                    <Input
+                      id="sell-price"
+                      type="number"
+                      placeholder={marketPrice.toString()}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-20 h-12 text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[#ff00e5]" />
+                      <span className="text-white font-medium">USDC</span>
+                    </div>
+                  </div>
+                  <div className="text-sm text-[#b4b4b4]">
+                    Market Price: ${marketPrice}
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting || !amount || !price}
+                  className={`w-full h-14 text-lg font-semibold transition-all duration-300 ${
+                    isSubmitting 
+                      ? 'bg-gradient-to-r from-[#ff00e5]/50 to-[#ff00e5]/30 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-[#ff00e5] to-[#ff00e5]/80 hover:from-[#ff00e5]/90 hover:to-[#ff00e5]/70 hover:scale-105 hover:shadow-xl hover:shadow-[#ff00e5]/25'
+                  } text-white border-0 rounded-xl`}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <Sparkles className="w-5 h-5 animate-pulse" />
+                      Encrypting Order...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <Lock className="w-5 h-5" />
+                      Encrypt & Submit Sell Order
+                    </div>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          {/* Order Preview */}
+          {(amount && price) && (
+            <Card className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border-[#00ff88]/30 animate-in slide-in-from-top duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-sm text-[#00ff88] mb-2">
+                  <Shield className="w-4 h-4" />
+                  <span className="font-medium">Order Preview (Encrypted)</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-[#b4b4b4]">Type:</span>
+                    <span className={orderType === 'buy' ? 'text-[#00f0ff]' : 'text-[#ff00e5]'}>
+                      {orderType.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#b4b4b4]">Amount:</span>
+                    <span className="text-white">{amount} SOL</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#b4b4b4]">Price:</span>
+                    <span className="text-white">${price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#b4b4b4]">Total:</span>
+                    <span className="text-white">${(parseFloat(amount || '0') * parseFloat(price || '0')).toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Privacy Guarantee */}
+          <div className="p-4 bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 rounded-xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#00ff88]/20 rounded-lg">
+                <Shield className="w-5 h-5 text-[#00ff88]" />
+              </div>
+              <div>
+                <div className="text-[#00ff88] font-medium">MEV Protection Active</div>
+                <div className="text-sm text-[#b4b4b4]">Your order is encrypted and invisible to front-runners</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

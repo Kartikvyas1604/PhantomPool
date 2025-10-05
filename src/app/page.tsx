@@ -23,34 +23,34 @@ export default function HomePage() {
       ...order, 
       id: orders.length + 1, 
       status: 'pending',
-      timestamp: Date.now()
+      timestamp: 1696521600000 + (orders.length * 60000)
     }
     setOrders([...orders, newOrder])
-    setDemoStatus('New encrypted order submitted 🔒')
+    setDemoStatus('🔒 New encrypted order submitted')
     setTimeout(() => setDemoStatus(null), 3000)
   }
 
   const simulateTraders = () => {
-    const currentTime = Date.now();
+    const baseTime = 1696521600000;
     const newOrders = [
-      { id: orders.length + 1, trader: 'Whale #4', amount: '500 SOL', price: '150.00', encrypted: 'ElG:4f8a...7d2c', status: 'pending', type: 'buy', timestamp: currentTime },
-      { id: orders.length + 2, trader: 'Whale #5', amount: '350 SOL', price: '149.90', encrypted: 'ElG:9c2b...5a1e', status: 'pending', type: 'sell', timestamp: currentTime + 1000 },
-      { id: orders.length + 3, trader: 'Whale #6', amount: '275 SOL', price: '150.10', encrypted: 'ElG:1d7e...8f3b', status: 'pending', type: 'buy', timestamp: currentTime + 2000 },
-      { id: orders.length + 4, trader: 'Whale #7', amount: '425 SOL', price: '149.95', encrypted: 'ElG:6a3f...2c9d', status: 'pending', type: 'sell', timestamp: currentTime + 3000 },
-      { id: orders.length + 5, trader: 'Whale #8', amount: '190 SOL', price: '150.05', encrypted: 'ElG:3e9c...4b7a', status: 'pending', type: 'buy', timestamp: currentTime + 4000 },
+      { id: orders.length + 1, trader: 'Whale #4', amount: '500 SOL', price: '150.00', encrypted: 'ElG:4f8a...7d2c', status: 'pending', type: 'buy', timestamp: baseTime + (orders.length + 1) * 60000 },
+      { id: orders.length + 2, trader: 'Whale #5', amount: '350 SOL', price: '149.90', encrypted: 'ElG:9c2b...5a1e', status: 'pending', type: 'sell', timestamp: baseTime + (orders.length + 2) * 60000 },
+      { id: orders.length + 3, trader: 'Whale #6', amount: '275 SOL', price: '150.10', encrypted: 'ElG:1d7e...8f3b', status: 'pending', type: 'buy', timestamp: baseTime + (orders.length + 3) * 60000 },
+      { id: orders.length + 4, trader: 'Whale #7', amount: '425 SOL', price: '149.95', encrypted: 'ElG:6a3f...2c9d', status: 'pending', type: 'sell', timestamp: baseTime + (orders.length + 4) * 60000 },
+      { id: orders.length + 5, trader: 'Whale #8', amount: '190 SOL', price: '150.05', encrypted: 'ElG:3e9c...4b7a', status: 'pending', type: 'buy', timestamp: baseTime + (orders.length + 5) * 60000 },
     ]
     
     setOrders([...orders, ...newOrders])
-    setDemoStatus('5 traders submitted encrypted orders ✅')
+    setDemoStatus('✅ 5 traders submitted encrypted orders')
     setTimeout(() => setDemoStatus(null), 3000)
   }
 
   const matchOrders = () => {
     setIsMatching(true)
-    setDemoStatus('VRF shuffling orders for fairness...')
+    setDemoStatus('🎲 VRF shuffling orders for fairness...')
     
     setTimeout(() => {
-      setDemoStatus('Computing fair clearing price with ZK proofs...')
+      setDemoStatus('🔐 Computing fair clearing price with ZK proofs...')
     }, 2000)
 
     setTimeout(() => {
@@ -58,20 +58,20 @@ export default function HomePage() {
       const buyOrders = orders.filter(o => o.type === 'buy')
       const sellOrders = orders.filter(o => o.type === 'sell')
       
-      const currentTime = Date.now();
+      const baseTime = 1696521600000;
       const matched = buyOrders.slice(0, Math.min(buyOrders.length, sellOrders.length)).map((buy, idx) => ({
-        id: currentTime + idx,
+        id: baseTime + idx,
         buyOrder: buy.trader,
         sellOrder: sellOrders[idx]?.trader || 'Anonymous',
         amount: buy.amount,
         clearingPrice: '149.95',
-        timestamp: currentTime,
+        timestamp: baseTime + (idx * 30000),
         zkProof: true
       }))
 
       setMatchedTrades([...matched, ...matchedTrades])
       setOrders(orders.map(o => ({ ...o, status: 'matched' })))
-      setDemoStatus('Orders matched at fair clearing price! Executing via Jupiter...')
+      setDemoStatus('🚀 Orders matched! Executing via Jupiter...')
       setIsMatching(false)
       
       setTimeout(() => setDemoStatus(null), 4000)
@@ -81,7 +81,7 @@ export default function HomePage() {
   const resetDemo = () => {
     setOrders([])
     setMatchedTrades([])
-    setDemoStatus('Demo reset')
+    setDemoStatus('🔄 Demo reset')
     setTimeout(() => setDemoStatus(null), 2000)
   }
 
@@ -99,7 +99,40 @@ export default function HomePage() {
       <div className="relative z-10">
         <Header />
         
-        <main className="max-w-[1920px] mx-auto px-6 py-8">
+        {/* Demo Status Bar */}
+        {demoStatus && (
+          <div className="max-w-7xl mx-auto px-6 py-2">
+            <div className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 backdrop-blur-xl rounded-xl p-3 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-[#00ff88]">
+                <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse" />
+                <span className="font-medium">{demoStatus}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <main className="max-w-7xl mx-auto px-6 py-8">
+          {/* Hero Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div className="bg-gradient-to-br from-[#00f0ff]/10 to-[#00f0ff]/5 border border-[#00f0ff]/20 backdrop-blur-xl rounded-xl p-6 text-center">
+              <div className="text-2xl font-bold text-[#00f0ff] mb-1">256-bit</div>
+              <div className="text-sm text-[#b4b4b4]">Encryption</div>
+            </div>
+            <div className="bg-gradient-to-br from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/20 backdrop-blur-xl rounded-xl p-6 text-center">
+              <div className="text-2xl font-bold text-[#00ff88] mb-1">$2.4M</div>
+              <div className="text-sm text-[#b4b4b4]">Volume Protected</div>
+            </div>
+            <div className="bg-gradient-to-br from-[#ff00e5]/10 to-[#ff00e5]/5 border border-[#ff00e5]/20 backdrop-blur-xl rounded-xl p-6 text-center">
+              <div className="text-2xl font-bold text-[#ff00e5] mb-1">5/5</div>
+              <div className="text-sm text-[#b4b4b4]">Validators</div>
+            </div>
+            <div className="bg-gradient-to-br from-[#ffaa00]/10 to-[#ffaa00]/5 border border-[#ffaa00]/20 backdrop-blur-xl rounded-xl p-6 text-center">
+              <div className="text-2xl font-bold text-[#ffaa00] mb-1">99.9%</div>
+              <div className="text-sm text-[#b4b4b4]">MEV Protection</div>
+            </div>
+          </div>
+
+          {/* Main 3-Column Trading Interface */}
           <ClientOnly>
             <TradingInterface 
               orders={orders}
@@ -108,7 +141,8 @@ export default function HomePage() {
               onAddOrder={addOrder}
             />
           </ClientOnly>
-          
+
+          {/* Cryptographic Proofs Dashboard */}
           <div className="mt-12">
             <ClientOnly>
               <CryptoProofsDashboard />

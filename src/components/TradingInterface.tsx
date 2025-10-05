@@ -21,7 +21,7 @@ export function TradingInterface({
     <div className="grid lg:grid-cols-3 gap-6">
       {/* Left Column - Order Entry */}
       <div className="lg:col-span-1">
-        <TradingForm onSubmit={onAddOrder} />
+        <TradingForm onSubmitOrder={onAddOrder} />
       </div>
 
       {/* Center Column - Order Book */}
