@@ -143,11 +143,12 @@ export function Header() {
   useEffect(() => {
     // Filter wallets by availability and platform
     const filtered = WALLET_LIST.filter(w => {
-      // Only show MetaMask if user is on Ethereum network (not Solana)
       if (w.id === 'metamask') return false;
       if (isMobile()) {
+        // On mobile, show wallets with mobile app or deep link
         return w.isMobile && (w.isAvailable() || w.deepLink);
       } else {
+        // On desktop, only show wallets that are available as browser extensions
         return w.isAvailable();
       }
     });
@@ -188,10 +189,7 @@ export function Header() {
         }, 1500);
         return;
       }
-      // Fallback: open install page
-      if (selected) {
-        window.open(selected.installUrl, '_blank');
-      }
+      // On desktop, do nothing (should not show wallets that aren't available)
     } finally {
       setConnecting(false);
     }
@@ -288,7 +286,7 @@ export function Header() {
               </div>
             ) : (
               <>
-                <Button onClick={connect} disabled={connecting} className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25 text-xs xs:text-sm sm:text-base w-full xs:w-auto">
+                <Button onClick={connect} disabled={connecting} className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25 text-xs xs:text-sm sm:text-base xs:w-full w-auto">
                   <Wallet className="w-4 h-4 xs:mr-2" />
                   <span className="hidden xs:inline">{connecting ? 'Connecting...' : 'Connect Wallet'}</span>
                   <span className="xs:hidden ml-1">{connecting ? '...' : 'Connect'}</span>
