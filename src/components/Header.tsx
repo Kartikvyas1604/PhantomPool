@@ -1,8 +1,9 @@
 "use client";
 
-import { Wallet, Activity, Shield, Zap } from 'lucide-react';
+import { Wallet, Activity, Zap } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import Image from 'next/image';
 
 export function Header() {
   return (
@@ -10,20 +11,26 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 h-16">
         <div className="flex items-center justify-between h-full">
           {/* Logo Section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#00f0ff] to-[#ff00e5] rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-center hover:scale-105 transition-all duration-300 animate-float">
+                <Image 
+                  src="/navbarlogo.svg" 
+                  alt="PhantomPool Logo" 
+                  width={72} 
+                  height={72}
+                  className="filter drop-shadow-lg"
+                />
               </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#00ff88] rounded-full flex items-center justify-center animate-pulse">
-                <div className="w-2 h-2 bg-white rounded-full" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#00ff88] rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-[#00ff88]/50">
+                <div className="w-2.5 h-2.5 bg-white rounded-full" />
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
                 PhantomPool
               </h1>
-              <p className="text-xs text-[#b4b4b4] -mt-1">Zero-Knowledge Dark Pool</p>
+              <p className="text-sm text-[#b4b4b4] -mt-1">Zero-Knowledge Dark Pool</p>
             </div>
           </div>
 
