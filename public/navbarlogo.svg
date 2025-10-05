@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="400" height="400" role="img" aria-labelledby="title desc">
+  <title id="title">PhantomPool Mascot Icon</title>
+  <desc id="desc">3D glass-gradient phantom mascot only — suitable for navbar or favicon.</desc>
+
+  <defs>
+    <linearGradient id="g-ghost" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00F0FF"/>
+      <stop offset="0.45" stop-color="#7B61FF"/>
+      <stop offset="1" stop-color="#FF4FD8"/>
+    </linearGradient>
+
+    <linearGradient id="g-ghost-dark" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#08122a"/>
+      <stop offset="1" stop-color="#1b0e3a" stop-opacity="0.15"/>
+    </linearGradient>
+
+    <radialGradient id="g-gloss" cx="30%" cy="22%" r="60%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="0.18" stop-color="#ffffff" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="g-ripple" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7B61FF"/>
+      <stop offset="0.6" stop-color="#00F0FF"/>
+      <stop offset="1" stop-color="#FF4FD8"/>
+    </linearGradient>
+
+    <filter id="f-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="22" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="f-inner-shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="6" result="off"/>
+      <feGaussianBlur in="off" stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="arithmetic" k2="-1" k3="1" result="innerShadow"/>
+      <feMerge>
+        <feMergeNode in="innerShadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <pattern id="p-noise" patternUnits="userSpaceOnUse" width="8" height="8">
+      <rect width="8" height="8" fill="transparent"/>
+      <path d="M0 0 L8 8 M8 0 L0 8" stroke="#ffffff" stroke-opacity="0.02" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- background removed so SVG is transparent in navbars -->
+
+  <g transform="translate(600,400)">
+  <!-- phantom mascot -->
+  <g>
+      <path d="M-120,-20C-120,-120 -20,-180 0,-180C20,-180 120,-120 120,-20C120,20 80,36 70,62C60,92 42,110 0,120C-42,110 -60,92 -70,62C-80,36 -120,20 -120,-20Z"
+            fill="url(#g-ghost)" opacity="0.98"/>
+      <path d="M-100,-10C-100,-90 -24,-136 0,-136C24,-136 100,-90 100,-10C100,20 76,32 68,54C60,80 44,96 0,104C-44,96 -60,80 -68,54C-76,32 -100,20 -100,-10Z"
+            fill="url(#g-ghost-dark)" opacity="0.26"/>
+      <path d="M-32,-140C-12,-158 12,-160 36,-140C56,-124 64,-100 52,-84C40,-68 18,-56 -2,-52C-24,-48 -46,-60 -56,-78C-66,-96 -56,-126 -32,-140Z"
+            fill="url(#g-gloss)" opacity="0.95"/>
+  <!-- noise rect removed to keep mascot background transparent -->
+      <g fill="#040612" opacity="0.98">
+        <ellipse cx="-34" cy="-18" rx="22" ry="32"/>
+        <ellipse cx="34" cy="-18" rx="22" ry="32"/>
+      </g>
+      <rect x="-20" y="18" width="40" height="12" rx="6" fill="#040612" opacity="0.95"/>
+  <!-- Outline removed to keep mascot clean in navbar -->
+    </g>
+
+    <!-- rim removed to keep mascot clean in navbars -->
+
+    <!-- decorative swirl removed for a cleaner navbar icon -->
+  </g>
+</svg>
