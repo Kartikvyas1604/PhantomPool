@@ -8,26 +8,25 @@ import Image from 'next/image';
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#00f0ff]/20 bg-gradient-to-r from-[#0a0118]/95 via-[#1a0b2e]/95 to-[#0a0118]/95 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-6 h-16">
-        <div className="flex items-center justify-between h-full">
+      <div className="max-w-7xl mx-auto px-6" style={{height: '84px'}}>
+        <div className="flex items-center justify-between" style={{height: '84px'}}>
           {/* Logo Section */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="flex items-center justify-center hover:scale-105 transition-all duration-300 animate-float">
-                <Image 
-                  src="/navbarlogo.svg" 
-                  alt="PhantomPool Logo" 
-                  width={72} 
-                  height={72}
-                  className="filter drop-shadow-lg"
-                />
-              </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#00ff88] rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-[#00ff88]/50">
-                <div className="w-2.5 h-2.5 bg-white rounded-full" />
+          <div className="flex items-center gap-2">
+            <div className="relative hover:scale-105 transition-all duration-300 animate-float" style={{border: 'none', background: 'transparent', padding: '0'}}>
+              <Image 
+                src="/navbarlogo.svg" 
+                alt="PhantomPool Logo" 
+                width={88} 
+                height={88}
+                className="filter drop-shadow-lg"
+                style={{border: 'none', background: 'transparent'}}
+              />
+              <div className="absolute top-1 right-1 w-4 h-4 bg-[#00ff88] rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-[#00ff88]/50">
+                <div className="w-2 h-2 bg-white rounded-full" />
               </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
                 PhantomPool
               </h1>
               <p className="text-sm text-[#b4b4b4] -mt-1">Zero-Knowledge Dark Pool</p>

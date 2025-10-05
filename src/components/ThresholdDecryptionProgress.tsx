@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Card } from './ui/card';
 import { Shield, CheckCircle, Lock } from 'lucide-react';

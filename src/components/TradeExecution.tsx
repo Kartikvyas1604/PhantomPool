@@ -7,7 +7,22 @@ import { ExternalLink, Zap, Shield, TrendingUp } from 'lucide-react';
 import { Button } from './ui/button';
 import { ThresholdDecryptionProgress } from './ThresholdDecryptionProgress';
 
-export function TradeExecution({ matchedTrades }: { matchedTrades: any[] }) {
+interface Trade {
+  id: string;
+  type: 'buy' | 'sell';
+  amount: string;
+  price: string;
+  timestamp: number;
+  buyOrder?: string;
+  sellOrder?: string;
+  clearingPrice?: string;
+}
+
+interface TradeExecutionProps {
+  matchedTrades: Trade[];
+}
+
+export function TradeExecution({ matchedTrades }: TradeExecutionProps) {
   return (
     <div className="space-y-6">
       {/* Matched Trades */}

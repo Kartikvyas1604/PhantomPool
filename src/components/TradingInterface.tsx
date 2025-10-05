@@ -4,11 +4,30 @@ import { TradingForm } from './TradingForm';
 import { OrderBookList } from './OrderBookList';
 import { TradeExecution } from './TradeExecution';
 
+interface Order {
+  id: number;
+  trader: string;
+  amount: string;
+  price: string;
+  encrypted: string;
+  status: string;
+  type: 'buy' | 'sell';
+  timestamp: number;
+}
+
+interface Trade {
+  id: string;
+  type: 'buy' | 'sell';
+  amount: string;
+  price: string;
+  timestamp: number;
+}
+
 interface TradingInterfaceProps {
-  orders: any[];
-  matchedTrades: any[];
+  orders: Order[];
+  matchedTrades: Trade[];
   isMatching: boolean;
-  onAddOrder: (order: any) => void;
+  onAddOrder: (order: Omit<Order, 'id'>) => void;
 }
 
 export function TradingInterface({ 

@@ -1,17 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Badge } from './ui/badge';
 import { ArrowUpDown, DollarSign, Coins, Lock, Shield, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 
+interface FormOrder {
+  type: 'buy' | 'sell';
+  amount: string;
+  price: string;
+  timestamp: number;
+  trader: string;
+  encrypted: string;
+  status: string;
+}
+
 interface TradingFormProps {
-  onSubmitOrder: (order: any) => void;
+  onSubmitOrder: (order: FormOrder) => void;
 }
 
 export function TradingForm({ onSubmitOrder }: TradingFormProps) {
@@ -31,10 +39,11 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
 
     const order = {
       type: orderType,
-      amount: `${amount} SOL`,
-      price: price,
-      trader: `Whale #${Math.floor(Math.random() * 100) + 1}`,
-      encrypted: `ElG:${Array.from({length: 4}, () => Math.random().toString(36).charAt(2)).join('')}...${Array.from({length: 4}, () => Math.random().toString(36).charAt(2)).join('')}`,
+      amount,
+      price,
+      timestamp: Date.now(),
+      trader: `Trader ${Math.random().toString(36).substr(2, 9)}`,
+      encrypted: `ElG:${Math.random().toString(36).substr(2, 8)}...${Math.random().toString(36).substr(2, 4)}`,
       status: 'pending'
     };
 
