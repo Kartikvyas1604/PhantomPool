@@ -23,13 +23,17 @@ export function TradingForm({ onSubmit }: { onSubmit: (order: any) => void }) {
     // Simulate encryption
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    const encryptedHash = `ElG:${Math.random().toString(36).substring(2, 6)}...${Math.random().toString(36).substring(2, 6)}`;
+    // Generate consistent hash based on timestamp and form data to avoid hydration issues
+    const timestamp = Date.now();
+    const hash1 = (timestamp % 10000).toString(36);
+    const hash2 = ((timestamp + parseInt(amount || '0')) % 10000).toString(36);
+    const encryptedHash = `ElG:${hash1}...${hash2}`;
     setEncryptedPreview(encryptedHash);
     
     await new Promise(resolve => setTimeout(resolve, 500));
     
     onSubmit({
-      trader: `Whale #${Math.floor(Math.random() * 100)}`,
+      trader: `Whale #${(timestamp % 100) + 1}`,
       amount: `${amount} SOL`,
       price: price,
       encrypted: encryptedHash,

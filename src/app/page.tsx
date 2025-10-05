@@ -5,12 +5,13 @@ import { Header } from '@/components/Header'
 import { TradingInterface } from '@/components/TradingInterface'
 import { CryptoProofsDashboard } from '@/components/CryptoProofsDashboard'
 import { SplineBackground } from '@/components/SplineBackground'
+import { ClientOnly } from '@/components/ClientOnly'
 
 export default function HomePage() {
   const [orders, setOrders] = useState([
-    { id: 1, trader: 'Whale #1', amount: '250 SOL', price: '149.50', encrypted: 'ElG:8a9f...3d2e', status: 'pending', type: 'buy', timestamp: Date.now() },
-    { id: 2, trader: 'Whale #2', amount: '180 SOL', price: '150.20', encrypted: 'ElG:7c4b...9a1f', status: 'pending', type: 'sell', timestamp: Date.now() },
-    { id: 3, trader: 'Whale #3', amount: '320 SOL', price: '149.80', encrypted: 'ElG:2e8d...5c7a', status: 'pending', type: 'buy', timestamp: Date.now() },
+    { id: 1, trader: 'Whale #1', amount: '250 SOL', price: '149.50', encrypted: 'ElG:8a9f...3d2e', status: 'pending', type: 'buy', timestamp: 1696521600000 },
+    { id: 2, trader: 'Whale #2', amount: '180 SOL', price: '150.20', encrypted: 'ElG:7c4b...9a1f', status: 'pending', type: 'sell', timestamp: 1696521660000 },
+    { id: 3, trader: 'Whale #3', amount: '320 SOL', price: '149.80', encrypted: 'ElG:2e8d...5c7a', status: 'pending', type: 'buy', timestamp: 1696521720000 },
   ])
 
   const [matchedTrades, setMatchedTrades] = useState<any[]>([])
@@ -30,12 +31,13 @@ export default function HomePage() {
   }
 
   const simulateTraders = () => {
+    const currentTime = Date.now();
     const newOrders = [
-      { id: orders.length + 1, trader: 'Whale #4', amount: '500 SOL', price: '150.00', encrypted: 'ElG:4f8a...7d2c', status: 'pending', type: 'buy', timestamp: Date.now() },
-      { id: orders.length + 2, trader: 'Whale #5', amount: '350 SOL', price: '149.90', encrypted: 'ElG:9c2b...5a1e', status: 'pending', type: 'sell', timestamp: Date.now() },
-      { id: orders.length + 3, trader: 'Whale #6', amount: '275 SOL', price: '150.10', encrypted: 'ElG:1d7e...8f3b', status: 'pending', type: 'buy', timestamp: Date.now() },
-      { id: orders.length + 4, trader: 'Whale #7', amount: '425 SOL', price: '149.95', encrypted: 'ElG:6a3f...2c9d', status: 'pending', type: 'sell', timestamp: Date.now() },
-      { id: orders.length + 5, trader: 'Whale #8', amount: '190 SOL', price: '150.05', encrypted: 'ElG:3e9c...4b7a', status: 'pending', type: 'buy', timestamp: Date.now() },
+      { id: orders.length + 1, trader: 'Whale #4', amount: '500 SOL', price: '150.00', encrypted: 'ElG:4f8a...7d2c', status: 'pending', type: 'buy', timestamp: currentTime },
+      { id: orders.length + 2, trader: 'Whale #5', amount: '350 SOL', price: '149.90', encrypted: 'ElG:9c2b...5a1e', status: 'pending', type: 'sell', timestamp: currentTime + 1000 },
+      { id: orders.length + 3, trader: 'Whale #6', amount: '275 SOL', price: '150.10', encrypted: 'ElG:1d7e...8f3b', status: 'pending', type: 'buy', timestamp: currentTime + 2000 },
+      { id: orders.length + 4, trader: 'Whale #7', amount: '425 SOL', price: '149.95', encrypted: 'ElG:6a3f...2c9d', status: 'pending', type: 'sell', timestamp: currentTime + 3000 },
+      { id: orders.length + 5, trader: 'Whale #8', amount: '190 SOL', price: '150.05', encrypted: 'ElG:3e9c...4b7a', status: 'pending', type: 'buy', timestamp: currentTime + 4000 },
     ]
     
     setOrders([...orders, ...newOrders])
@@ -56,13 +58,14 @@ export default function HomePage() {
       const buyOrders = orders.filter(o => o.type === 'buy')
       const sellOrders = orders.filter(o => o.type === 'sell')
       
+      const currentTime = Date.now();
       const matched = buyOrders.slice(0, Math.min(buyOrders.length, sellOrders.length)).map((buy, idx) => ({
-        id: Date.now() + idx,
+        id: currentTime + idx,
         buyOrder: buy.trader,
         sellOrder: sellOrders[idx]?.trader || 'Anonymous',
         amount: buy.amount,
         clearingPrice: '149.95',
-        timestamp: Date.now(),
+        timestamp: currentTime,
         zkProof: true
       }))
 
@@ -85,7 +88,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0a0118] relative overflow-hidden">
       {/* Spline 3D Background */}
-      <SplineBackground />
+      <ClientOnly>
+        <SplineBackground />
+      </ClientOnly>
       
       {/* Gradient Overlays */}
       <div className="fixed inset-0 bg-gradient-to-br from-[#0a0118] via-[#1a0b2e] to-[#0a0118] pointer-events-none" />
@@ -95,15 +100,19 @@ export default function HomePage() {
         <Header />
         
         <main className="max-w-[1920px] mx-auto px-6 py-8">
-          <TradingInterface 
-            orders={orders}
-            matchedTrades={matchedTrades}
-            isMatching={isMatching}
-            onAddOrder={addOrder}
-          />
+          <ClientOnly>
+            <TradingInterface 
+              orders={orders}
+              matchedTrades={matchedTrades}
+              isMatching={isMatching}
+              onAddOrder={addOrder}
+            />
+          </ClientOnly>
           
           <div className="mt-12">
-            <CryptoProofsDashboard />
+            <ClientOnly>
+              <CryptoProofsDashboard />
+            </ClientOnly>
           </div>
         </main>
 
