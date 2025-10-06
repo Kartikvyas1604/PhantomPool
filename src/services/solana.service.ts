@@ -33,7 +33,7 @@ export class SolanaService {
     balance: 0,
     provider: null
   }
-  private listeners: Map<string, Function[]> = new Map()
+  private listeners: Map<string, ((...args: any[]) => void)[]> = new Map()
 
   static getInstance(): SolanaService {
     if (!this.instance) {
@@ -156,7 +156,7 @@ export class SolanaService {
     return mockHistory
   }
 
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (...args: any[]) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, [])
     }

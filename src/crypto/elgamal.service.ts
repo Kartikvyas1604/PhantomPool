@@ -136,7 +136,7 @@ export class ElGamalService {
 
   private static hashToScalar(input: string): bigint {
     const hash = randomBytes(32)
-    let scalar = BigInt('0x' + hash.toString('hex'))
+    const scalar = BigInt('0x' + hash.toString('hex'))
     return scalar % CURVE_ORDER
   }
 }
