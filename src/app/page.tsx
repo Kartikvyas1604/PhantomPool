@@ -6,6 +6,8 @@ import { TradingInterface } from '@/components/TradingInterface'
 import { CryptoProofsDashboard } from '@/components/CryptoProofsDashboard'
 import { SplineBackground } from '@/components/SplineBackground'
 import { ClientOnly } from '@/components/ClientOnly'
+import { ElGamalService } from '@/crypto/elgamal.service'
+import { VRFService } from '@/crypto/vrf.service'
 
 interface Order {
   id: number;
@@ -38,19 +40,27 @@ export default function HomePage() {
   const [demoStatus, setDemoStatus] = useState<string | null>(null)
 
   const addOrder = (order: Omit<Order, 'id'>) => {
+    const keyPair = ElGamalService.generateKeyPair()
+    const amountBig = BigInt(Math.floor(parseFloat(order.amount.replace(' SOL', '')) * 100))
+    const priceBig = BigInt(Math.floor(parseFloat(order.price.replace('$', '')) * 100))
+    
+    const encryptedAmount = ElGamalService.encrypt(keyPair.pk, amountBig)
+    const encryptedPrice = ElGamalService.encrypt(keyPair.pk, priceBig)
+    
     const newOrder = { 
       ...order, 
       id: orders.length + 1, 
       status: 'pending',
-      timestamp: 1696521600000 + (orders.length * 60000)
+      timestamp: Date.now(),
+      encrypted: `ElG:${encryptedAmount.c1.x.toString(16).slice(0, 8)}...${encryptedAmount.c2.x.toString(16).slice(-4)}`
     }
     setOrders([...orders, newOrder])
-    setDemoStatus('🔒 New encrypted order submitted')
-    setTimeout(() => setDemoStatus(null), 3000)
+    setDemoStatus('🔒 Order encrypted with ElGamal homomorphic encryption')
+    setTimeout(() => setDemoStatus(null), 4000)
   }
 
   const simulateTraders = () => {
-    const baseTime = 1696521600000;
+    const baseTime = Date.now();
     const newOrders: Order[] = [
       { id: orders.length + 1, trader: 'Whale #4', amount: '500 SOL', price: '150.00', encrypted: 'ElG:4f8a...7d2c', status: 'pending', type: 'buy' as const, timestamp: baseTime + (orders.length + 1) * 60000 },
       { id: orders.length + 2, trader: 'Whale #5', amount: '350 SOL', price: '149.90', encrypted: 'ElG:9c2b...5a1e', status: 'pending', type: 'sell' as const, timestamp: baseTime + (orders.length + 2) * 60000 },
@@ -59,9 +69,14 @@ export default function HomePage() {
       { id: orders.length + 5, trader: 'Whale #8', amount: '190 SOL', price: '150.05', encrypted: 'ElG:3e9c...4b7a', status: 'pending', type: 'buy' as const, timestamp: baseTime + (orders.length + 5) * 60000 },
     ]
     
-    setOrders([...orders, ...newOrders])
-    setDemoStatus('✅ 5 traders submitted encrypted orders')
-    setTimeout(() => setDemoStatus(null), 3000)
+    const shuffleResult = VRFService.shuffleOrders(newOrders.map(o => o.id))
+    const shuffledOrders = shuffleResult.shuffledIndices.map(id => 
+      newOrders.find(o => o.id === id)!
+    ).filter(Boolean)
+    
+    setOrders([...orders, ...shuffledOrders])
+    setDemoStatus('🎲 VRF shuffle completed - orders randomized for fair matching')
+    setTimeout(() => setDemoStatus(null), 4000)
   }
 
   // Removed unused matchOrders function

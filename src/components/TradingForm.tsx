@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ArrowUpDown, DollarSign, Coins, Lock, Shield, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
+import { ElGamalService } from '../crypto/elgamal.service';
+import { BulletproofsService } from '../crypto/bulletproofs.service';
+import { SolanaService } from '../services/solana.service';
+import { metricsService } from '../services/metrics.service';
 
 interface FormOrder {
   type: 'buy' | 'sell';
@@ -27,6 +31,8 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(1250.00);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,27 +40,78 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
 
     setIsSubmitting(true);
 
-    // Simulate encryption animation
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const encryptionStart = Date.now();
+      const keyPair = ElGamalService.generateKeyPair();
+      
+      const amountBigInt = BigInt(Math.floor(parseFloat(amount) * 100));
+      const priceBigInt = BigInt(Math.floor(parseFloat(price) * 100));
+      const totalValue = amountBigInt * priceBigInt / BigInt(100);
+      
+      const encryptedAmount = ElGamalService.encrypt(keyPair.pk, amountBigInt);
+      const encryptedPrice = ElGamalService.encrypt(keyPair.pk, priceBigInt);
+      
+      const encryptionTime = Date.now() - encryptionStart;
+      
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      const solanaService = SolanaService.getInstance();
+      const walletState = solanaService.getWalletState();
+      
+      const solvencyProof = BulletproofsService.verifySolvency(
+        walletState.publicKey || 'anonymous',
+        totalValue
+      );
+      
+      metricsService.incrementOrderSubmitted(Number(amountBigInt), encryptionTime);
+      metricsService.recordCryptoOperation('bulletproof', 2400);
+      
+      const order = {
+        type: orderType,
+        amount,
+        price,
+        timestamp: Date.now(),
+        trader: walletState.publicKey ? 
+          `${walletState.publicKey.slice(0, 4)}...${walletState.publicKey.slice(-4)}` :
+          `Trader ${Math.random().toString(36).substr(2, 9)}`,
+        encrypted: `ElG:${encryptedAmount.c1.x.toString(16).slice(0, 8)}...${encryptedAmount.c2.x.toString(16).slice(-4)}`,
+        status: 'pending'
+      };
 
-    const order = {
-      type: orderType,
-      amount,
-      price,
-      timestamp: Date.now(),
-      trader: `Trader ${Math.random().toString(36).substr(2, 9)}`,
-      encrypted: `ElG:${Math.random().toString(36).substr(2, 8)}...${Math.random().toString(36).substr(2, 4)}`,
-      status: 'pending'
-    };
+      if (solanaService.isConnected()) {
+        await solanaService.submitOrder(order);
+      }
 
-    onSubmitOrder(order);
-    setAmount('');
-    setPrice('');
-    setIsSubmitting(false);
+      onSubmitOrder(order);
+      setAmount('');
+      setPrice('');
+    } catch (error) {
+      console.error('Order submission failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const marketPrice = 149.50;
-  const balance = 1250.00;
+  const balance = walletBalance;
+
+  useEffect(() => {
+    const solanaService = SolanaService.getInstance();
+    const walletState = solanaService.getWalletState();
+    
+    setIsWalletConnected(walletState.connected);
+    setWalletBalance(walletState.balance || 1250.00);
+    
+    solanaService.on('connected', (state: any) => {
+      setIsWalletConnected(true);
+      setWalletBalance(state.balance || 1250.00);
+    });
+    
+    solanaService.on('disconnected', () => {
+      setIsWalletConnected(false);
+      setWalletBalance(1250.00);
+    });
+  }, []);
 
   return (
     <div className="space-y-4 sm:space-y-6">

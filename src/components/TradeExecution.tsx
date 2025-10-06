@@ -3,9 +3,36 @@
 import { motion } from 'motion/react';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { ExternalLink, Zap, Shield, TrendingUp } from 'lucide-react';
+import { ExternalLin            <div className=\"space-y-2 sm:space-y-3 mb-3 sm:mb-4\">
+            <div className=\"flex justify-between items-center py-1.5 sm:py-2 border-b border-white/10\">
+              <span className=\"text-[#b4b4b4] text-xs sm:text-sm\">Route</span>
+              <span className=\"text-white text-xs sm:text-sm\">
+                {jupiterRoute ? jupiterRoute.route.join(' → ') : 'Raydium → Orca'}
+              </span>
+            </div>
+            <div className=\"flex justify-between items-center py-1.5 sm:py-2 border-b border-white/10\">
+              <span className=\"text-[#b4b4b4] text-xs sm:text-sm\">Expected Output</span>
+              <span className=\"text-[#00ff88] text-xs sm:text-sm\">
+                {jupiterRoute ? `${parseFloat(jupiterRoute.expectedOutput).toFixed(2)} USDC` : '14,950 USDC'}
+              </span>
+            </div>
+            <div className=\"flex justify-between items-center py-1.5 sm:py-2 border-b border-white/10\">
+              <span className=\"text-[#b4b4b4] text-xs sm:text-sm\">Price Impact</span>
+              <span className=\"text-[#00ff88] text-xs sm:text-sm\">
+                {jupiterRoute ? `${jupiterRoute.priceImpact.toFixed(2)}%` : '0.12%'}
+              </span>
+            </div>
+            <div className=\"flex justify-between items-center py-1.5 sm:py-2\">
+              <span className=\"text-[#b4b4b4] text-xs sm:text-sm\">Connection</span>
+              <span className={`text-xs sm:text-sm ${jupiterStatus.connected ? 'text-[#00ff88]' : 'text-[#ff00e5]'}`}>
+                {jupiterStatus.connected ? 'Live' : 'Mock'}
+              </span>
+            </div>
+          </div>, TrendingUp } from 'lucide-react';
 import { Button } from './ui/button';
 import { ThresholdDecryptionProgress } from './ThresholdDecryptionProgress';
+import { JupiterService } from '../services/jupiter.service';
+import { useState, useEffect } from 'react';
 
 interface Trade {
   id: string;
@@ -23,6 +50,30 @@ interface TradeExecutionProps {
 }
 
 export function TradeExecution({ matchedTrades }: TradeExecutionProps) {
+  const [jupiterRoute, setJupiterRoute] = useState<any>(null);
+  const [jupiterStatus, setJupiterStatus] = useState(JupiterService.getInstance().getConnectionStatus());
+
+  useEffect(() => {
+    const loadJupiterData = async () => {
+      try {
+        const jupiter = JupiterService.getInstance();
+        const route = await jupiter.getBestRoute(
+          'So11111111111111111111111111111111111111112', // SOL
+          'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+          '100000000000' // 100 SOL
+        );
+        setJupiterRoute(route);
+        setJupiterStatus(jupiter.getConnectionStatus());
+      } catch (error) {
+        console.warn('Jupiter integration unavailable:', error);
+      }
+    };
+
+    loadJupiterData();
+    const interval = setInterval(loadJupiterData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Matched Trades */}

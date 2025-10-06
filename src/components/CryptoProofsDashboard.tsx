@@ -4,8 +4,29 @@ import { motion } from 'motion/react';
 import { Card } from './ui/card';
 import { Shield, Lock, Shuffle, Unlock, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { metricsService } from '../services/metrics.service';
+import { ThresholdService } from '../crypto/threshold.service';
+import { BulletproofsService } from '../crypto/bulletproofs.service';
+import { VRFService } from '../crypto/vrf.service';
+import { useState, useEffect } from 'react';
 
 export function CryptoProofsDashboard() {
+  const [metrics, setMetrics] = useState(metricsService.getMetrics());
+  const [thresholdStatus, setThresholdStatus] = useState(ThresholdService.getExecutorStatus());
+  const [bulletproofsStats, setBulletproofsStats] = useState(BulletproofsService.getBatchStats());
+  const [fairnessMetrics, setFairnessMetrics] = useState(VRFService.getFairnessMetrics());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(metricsService.getMetrics());
+      setThresholdStatus(ThresholdService.getExecutorStatus());
+      setBulletproofsStats(BulletproofsService.getBatchStats());
+      setFairnessMetrics(VRFService.getFairnessMetrics());
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const proofs = [
     {
       title: 'ElGamal Encryption',
@@ -17,8 +38,8 @@ export function CryptoProofsDashboard() {
       status: 'Active',
       details: 'Homomorphic encryption allows computation on encrypted data without decryption. 2048-bit key strength.',
       metrics: {
-        'Encrypted Orders': '12',
-        'Encryption Time': '< 100ms',
+        'Encrypted Orders': metrics.orders.activeOrders.toString(),
+        'Encryption Time': `${metrics.orders.encryptionTime}ms`,
         'Key Strength': '2048-bit'
       }
     },
@@ -32,9 +53,9 @@ export function CryptoProofsDashboard() {
       status: 'Verified',
       details: 'Zero-knowledge range proofs ensure all traders have sufficient balance without revealing amounts.',
       metrics: {
-        'Traders Verified': '8',
-        'Proof Size': '2.4 KB',
-        'Verification': '12ms'
+        'Traders Verified': bulletproofsStats.verifiedProofs.toString(),
+        'Proof Size': bulletproofsStats.averageSize,
+        'Success Rate': `${Math.round(bulletproofsStats.successRate * 100)}%`
       }
     },
     {
@@ -47,24 +68,24 @@ export function CryptoProofsDashboard() {
       status: 'Verified',
       details: 'Verifiable Random Function ensures unpredictable, fair order sequencing that cannot be manipulated.',
       metrics: {
-        'Randomness Source': 'VRF',
-        'Shuffle Verified': 'Yes',
-        'Proof Size': '1.8 KB'
+        'Entropy Score': `${Math.round(fairnessMetrics.entropy * 100)}%`,
+        'Uniformity': `${Math.round(fairnessMetrics.uniformity * 100)}%`,
+        'Unpredictability': `${Math.round(fairnessMetrics.unpredictability * 100)}%`
       }
     },
     {
       title: 'Threshold Network',
-      description: '5/5 executors online',
+      description: `${thresholdStatus.online}/${thresholdStatus.online + thresholdStatus.offline} executors online`,
       icon: Unlock,
       color: 'from-[#8b5cf6] to-[#8b5cf6]/80',
       borderColor: 'border-[#8b5cf6]/30',
       bgColor: 'bg-[#8b5cf6]/10',
-      status: 'Online',
+      status: thresholdStatus.online >= thresholdStatus.threshold ? 'Online' : 'Degraded',
       details: '3-of-5 threshold signature scheme using Shamir Secret Sharing prevents single point of failure.',
       metrics: {
-        'Active Nodes': '5/5',
-        'Threshold': '3-of-5',
-        'Uptime': '99.9%'
+        'Active Nodes': `${thresholdStatus.online}/${thresholdStatus.online + thresholdStatus.offline}`,
+        'Threshold': `${thresholdStatus.threshold}-of-${thresholdStatus.online + thresholdStatus.offline}`,
+        'Uptime': `${Math.round(thresholdStatus.uptime * 100)}%`
       }
     },
   ];
