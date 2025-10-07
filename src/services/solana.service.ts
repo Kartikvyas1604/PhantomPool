@@ -101,8 +101,18 @@ export class SolanaService {
 
   async getBalance(publicKey: string): Promise<number> {
     try {
-      const balance = Math.random() * 1000 + 500
-      return Math.floor(balance * 100) / 100
+      if (typeof window === 'undefined') {
+        return 0
+      }
+
+      const { Connection, PublicKey, LAMPORTS_PER_SOL } = await import('@solana/web3.js')
+      const connection = new Connection(
+        process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+        'confirmed'
+      )
+      
+      const balance = await connection.getBalance(new PublicKey(publicKey))
+      return balance / LAMPORTS_PER_SOL
     } catch (error) {
       console.error('Failed to get balance:', error)
       return 0
@@ -134,26 +144,50 @@ export class SolanaService {
   }
 
   async getOrderHistory(publicKey: string): Promise<any[]> {
-    const mockHistory = [
-      {
-        signature: this.generateTransactionSignature(),
-        type: 'buy',
-        amount: '100 SOL',
-        price: '$149.50',
-        timestamp: Date.now() - 3600000,
-        status: 'confirmed'
-      },
-      {
-        signature: this.generateTransactionSignature(),
-        type: 'sell',
-        amount: '50 SOL',
-        price: '$150.20',
-        timestamp: Date.now() - 7200000,
-        status: 'confirmed'
+    try {
+      if (typeof window === 'undefined') {
+        return []
       }
-    ]
-    
-    return mockHistory
+
+      const { Connection, PublicKey } = await import('@solana/web3.js')
+      const connection = new Connection(
+        process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+        'confirmed'
+      )
+      
+      const signatures = await connection.getSignaturesForAddress(
+        new PublicKey(publicKey),
+        { limit: 50 }
+      )
+      
+      const transactionHistory = await Promise.all(
+        signatures.slice(0, 10).map(async (sig: any) => {
+          try {
+            const tx = await connection.getTransaction(sig.signature, {
+              commitment: 'confirmed',
+              maxSupportedTransactionVersion: 0
+            })
+            
+            return {
+              signature: sig.signature,
+              type: 'unknown',
+              amount: '0 SOL',
+              price: '$0.00',
+              timestamp: (sig.blockTime || 0) * 1000,
+              status: sig.err ? 'failed' : 'confirmed',
+              slot: sig.slot
+            }
+          } catch {
+            return null
+          }
+        })
+      )
+      
+      return transactionHistory.filter(tx => tx !== null)
+    } catch (error) {
+      console.error('Failed to get order history:', error)
+      return []
+    }
   }
 
   on(event: string, callback: (...args: any[]) => void): void {

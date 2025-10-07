@@ -88,24 +88,45 @@ export class JupiterService {
     amount: string,
     slippageBps: number = 50
   ): Promise<JupiterRoute> {
-    if (!this.connected) {
-      return this.getMockQuote(inputMint, outputMint, amount, slippageBps)
-    }
-
     try {
       const params = new URLSearchParams({
         inputMint,
         outputMint,
         amount,
-        slippageBps: slippageBps.toString()
+        slippageBps: slippageBps.toString(),
+        onlyDirectRoutes: 'false',
+        asLegacyTransaction: 'false'
       })
 
-      const response = await fetch(`${this.apiUrl}/quote?${params}`)
-      const data = await response.json()
-      
-      return this.parseJupiterResponse(data)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+      try {
+        const response = await fetch(`${this.apiUrl}/quote?${params}`, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`Jupiter API error: ${response.status}`)
+        }
+
+        const data = await response.json()
+        clearTimeout(timeoutId)
+        
+        if (!data || !data.outAmount) {
+          throw new Error('Invalid Jupiter API response')
+        }
+        
+        return this.parseJupiterResponse(data)
+      } finally {
+        clearTimeout(timeoutId)
+      }
     } catch (error) {
-      console.warn('Jupiter API call failed, using mock data:', error)
+      console.warn('Jupiter API call failed, using fallback:', error)
       return this.getMockQuote(inputMint, outputMint, amount, slippageBps)
     }
   }
@@ -164,10 +185,28 @@ export class JupiterService {
   }
 
   async getTokenPrice(tokenAddress: string): Promise<number> {
-    if (tokenAddress === 'So11111111111111111111111111111111111111112') {
-      return 149.50 + (Math.random() - 0.5) * 5
+    try {
+      const response = await fetch(`https://price.jup.ag/v4/price?ids=${tokenAddress}`)
+      const data = await response.json()
+      
+      if (data.data && data.data[tokenAddress]) {
+        return data.data[tokenAddress].price
+      }
+      
+      if (tokenAddress === 'So11111111111111111111111111111111111111112') {
+        const solResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd')
+        const solData = await solResponse.json()
+        return solData.solana?.usd || 100
+      }
+      
+      return 1.0
+    } catch (error) {
+      console.warn('Failed to fetch token price:', error)
+      if (tokenAddress === 'So11111111111111111111111111111111111111112') {
+        return 100
+      }
+      return 1.0
     }
-    return 1.0 + (Math.random() - 0.5) * 0.01
   }
 
   private async testConnection(): Promise<void> {
