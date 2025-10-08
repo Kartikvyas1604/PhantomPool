@@ -41,3 +41,38 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# Solana/Anchor - CRITICAL: These are the large files causing the issue
+test-ledger/
+.anchor/
+keypairs/
+
+# Rust build artifacts - CRITICAL: Large compiled files  
+target/
+programs/*/target/
+programs/phantom-pool/target/
+Cargo.lock
+
+# Solana program artifacts
+*.so
+programs/**/*.so
+programs/**/target/
+programs/**/Cargo.lock
+
+# RocksDB files
+*.sst
+*.log
+rocksdb/
+
+# Large binary files
+*.bin
+*.rlib
+*.rmeta
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis dump
+dump.rdb
