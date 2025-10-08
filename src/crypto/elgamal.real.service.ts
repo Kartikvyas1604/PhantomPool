@@ -258,7 +258,12 @@ export class ElGamalRealService {
       }
     }
     
-    const s = ((y2 - y1) * this.modInverse(x2 - x1, this.p)) % this.p
+    const dx = (x2 - x1 + this.p) % this.p
+    if (dx === BigInt(0)) {
+      return this.pointAtInfinity()
+    }
+    
+    const s = ((y2 - y1) * this.modInverse(dx, this.p)) % this.p
     const x3 = (s * s - x1 - x2) % this.p
     const y3 = (s * (x1 - x3) - y1) % this.p
     
@@ -328,10 +333,14 @@ export class ElGamalRealService {
   }
 
   private static modInverse(a: bigint, m: bigint): bigint {
+    // Ensure inputs are positive
+    a = ((a % m) + m) % m
+    
     const [gcd, x] = this.extendedGCD(a, m)
     
     if (gcd !== BigInt(1)) {
-      throw new Error('Modular inverse does not exist')
+      console.error(`Modular inverse error: gcd(${a}, ${m}) = ${gcd}`)
+      throw new Error(`Modular inverse does not exist: gcd(${a}, ${m}) = ${gcd}`)
     }
     
     return (x % m + m) % m
@@ -342,11 +351,23 @@ export class ElGamalRealService {
       return [a, BigInt(1)]
     }
     
-    const [gcd, x1] = this.extendedGCD(b, a % b)
-    const x = x1
-    const y = x1 - (a / b) * x1
+    let oldR = a
+    let r = b
+    let oldS = BigInt(1)
+    let s = BigInt(0)
     
-    return [gcd, y]
+    while (r !== BigInt(0)) {
+      const quotient = oldR / r
+      const tempR = r
+      r = oldR - quotient * r
+      oldR = tempR
+      
+      const tempS = s
+      s = oldS - quotient * s
+      oldS = tempS
+    }
+    
+    return [oldR, oldS]
   }
 
   private static discreteLog(point: ECPoint): bigint {

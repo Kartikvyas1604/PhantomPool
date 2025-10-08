@@ -187,11 +187,11 @@ export class OnChainApiServer {
           orders: limitedOrders.map(order => ({
             orderHash: Buffer.from(order.orderHash).toString('hex'),
             owner: order.owner.toString(),
-            side: 'buy' in order.side ? 'buy' : 'sell',
-            status: Object.keys(order.status)[0],
-            submittedAt: order.submittedAt.toNumber(),
-            matchedAt: order.matchedAt?.toNumber() || null,
-            cancelledAt: order.cancelledAt?.toNumber() || null
+            side: order.side === 'BUY' ? 'buy' : 'sell',
+            status: order.status,
+            submittedAt: order.submittedAt,
+            matchedAt: null,
+            cancelledAt: null
           })),
           count: limitedOrders.length,
           total: orders.length
@@ -374,7 +374,7 @@ export class OnChainApiServer {
       fastify.get('/ws', { websocket: true }, (connection, req) => {
         console.log('WebSocket connection established')
 
-        connection.socket.on('message', (message) => {
+        connection.socket.on('message', (message: any) => {
           try {
             const data = JSON.parse(message.toString())
             
@@ -500,8 +500,6 @@ async function startServer() {
   await server.start()
 }
 
-if (require.main === module) {
-  startServer().catch(console.error)
-}
+// Remove direct execution check for module import compatibility
 
 export { startServer }

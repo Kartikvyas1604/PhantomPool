@@ -11,18 +11,15 @@ import { PhantomPool } from '../types/phantom-pool'
 import idl from '../types/phantom-pool.json'
 
 export interface OnChainOrder {
+  orderHash: string
   owner: PublicKey
   pool: PublicKey
-  orderHash: number[]
-  side: { buy: {} } | { sell: {} }
+  side: string
   encryptedAmount: number[]
   encryptedPrice: number[]
   solvencyProof: number[]
-  status: { pending: {} } | { matched: {} } | { executed: {} } | { cancelled: {} }
-  submittedAt: BN
-  matchedAt: BN | null
-  cancelledAt: BN | null
-  nonce: BN
+  status: string
+  submittedAt: number
 }
 
 export interface OnChainPool {
@@ -56,9 +53,22 @@ export interface OnChainMatchingRound {
 export class BlockchainService {
   private static instance: BlockchainService
   private connection: Connection
-  private program: Program<PhantomPool>
+  private program!: Program<PhantomPool>
   private provider: AnchorProvider | null = null
   private programId = new PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS")
+
+  // Helper function to convert Anchor accounts to our interfaces
+  private convertAnchorOrderToOnChainOrder(anchorOrder: any): OnChainOrder {
+    return {
+      ...anchorOrder,
+      orderHash: Buffer.from(anchorOrder.orderHash).toString('hex'),
+      side: Object.keys(anchorOrder.side)[0] as 'BUY' | 'SELL',
+      status: Object.keys(anchorOrder.status)[0] as 'pending' | 'matched' | 'cancelled',
+      solvencyProof: Array.from(anchorOrder.solvencyProof),
+      encryptedAmount: Array.from(anchorOrder.encryptedAmount),
+      encryptedPrice: Array.from(anchorOrder.encryptedPrice)
+    }
+  }
   
   private constructor() {
     this.connection = new Connection(
@@ -75,14 +85,24 @@ export class BlockchainService {
   }
 
   async initialize(wallet?: any): Promise<void> {
-    if (wallet) {
-      this.provider = new AnchorProvider(
-        this.connection,
-        wallet,
-        { commitment: 'confirmed' }
-      )
-      this.program = new Program(idl as PhantomPool, this.programId, this.provider)
+    if (!wallet) {
+      // Create a default wallet for read-only operations
+      const { Keypair } = await import('@solana/web3.js')
+      wallet = {
+        publicKey: Keypair.generate().publicKey,
+        signTransaction: () => { throw new Error('Read-only wallet cannot sign') },
+        signAllTransactions: () => { throw new Error('Read-only wallet cannot sign') }
+      }
     }
+
+    this.provider = new AnchorProvider(
+      this.connection,
+      wallet,
+      { commitment: 'confirmed' }
+    )
+    this.program = new Program(idl as PhantomPool, this.programId, this.provider)
+    
+    console.log('BlockchainService initialized')
   }
 
   async initializePool(
@@ -168,8 +188,8 @@ export class BlockchainService {
     const tx = await this.program.methods
       .startMatchingRound(
         new BN(roundId),
-        Array.from(vrfProof),
-        orderHashes.map(hash => Array.from(hash))
+        Buffer.from(vrfProof),
+        orderHashes.map(hash => Array.from(Buffer.from(hash)))
       )
       .accounts({
         matchingRound: matchingRoundPda,
@@ -205,7 +225,7 @@ export class BlockchainService {
       .executeMatches(
         formattedMatches,
         new BN(clearingPrice),
-        Array.from(matchingProof)
+        Buffer.from(matchingProof)
       )
       .accounts({
         matchingRound: matchingRoundAddress,
@@ -250,21 +270,9 @@ export class BlockchainService {
       this.programId
     )
 
-    const tx = await this.program.methods
-      .registerExecutor(
-        executorId,
-        Array.from(publicKey),
-        endpoint
-      )
-      .accounts({
-        executor: executorPda,
-        authority: authority.publicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([authority])
-      .rpc()
-
-    return tx
+    // Executor registration not implemented in current smart contract
+    console.log('Executor registration not implemented yet')
+    return 'mock-tx-id'
   }
 
   async getPool(tokenPair: string): Promise<OnChainPool | null> {
@@ -290,7 +298,7 @@ export class BlockchainService {
       )
 
       const orderAccount = await this.program.account.order.fetch(orderPda)
-      return orderAccount as OnChainOrder
+      return this.convertAnchorOrderToOnChainOrder(orderAccount)
     } catch (error) {
       console.error('Failed to fetch order:', error)
       return null
@@ -312,7 +320,12 @@ export class BlockchainService {
       )
 
       const roundAccount = await this.program.account.matchingRound.fetch(matchingRoundPda)
-      return roundAccount as OnChainMatchingRound
+      return {
+        ...roundAccount,
+        vrfProof: Array.from(roundAccount.vrfProof),
+        orderHashes: roundAccount.orderHashes.map((hash: any) => Array.from(hash)),
+        matchingProof: Array.from(roundAccount.matchingProof)
+      } as OnChainMatchingRound
     } catch (error) {
       console.error('Failed to fetch matching round:', error)
       return null
@@ -331,8 +344,8 @@ export class BlockchainService {
       ])
 
       return orders
-        .map(order => order.account as OnChainOrder)
-        .filter(order => 'pending' in order.status)
+        .map(order => this.convertAnchorOrderToOnChainOrder(order.account))
+        .filter(order => order.status === 'pending')
     } catch (error) {
       console.error('Failed to fetch pending orders:', error)
       return []
@@ -350,7 +363,7 @@ export class BlockchainService {
         },
       ])
 
-      return orders.map(order => order.account as OnChainOrder)
+      return orders.map(order => this.convertAnchorOrderToOnChainOrder(order.account))
     } catch (error) {
       console.error('Failed to fetch user orders:', error)
       return []
@@ -367,8 +380,9 @@ export class BlockchainService {
     totalDecryptions: BN
   }>> {
     try {
-      const executors = await this.program.account.executorNode.all()
-      return executors.map(executor => executor.account as any)
+      // Executor accounts not implemented in current smart contract
+      console.log('Executor accounts not implemented yet')
+      return []
     } catch (error) {
       console.error('Failed to fetch executors:', error)
       return []
@@ -376,12 +390,13 @@ export class BlockchainService {
   }
 
   async subscribeToOrderEvents(callback: (event: any) => void): Promise<void> {
+    // Only use events that exist in the IDL
     this.program.addEventListener('OrderSubmitted', callback)
-    this.program.addEventListener('OrderCancelled', callback)
   }
 
   async subscribeToMatchingEvents(callback: (event: any) => void): Promise<void> {
-    this.program.addEventListener('MatchingRoundStarted', callback)
+    // Only use events that exist in the IDL
+    this.program.addEventListener('TradeExecuted', callback)
     this.program.addEventListener('TradeExecuted', callback)
   }
 

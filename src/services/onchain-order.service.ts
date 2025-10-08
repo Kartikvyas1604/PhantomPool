@@ -117,18 +117,13 @@ export class OnChainOrderService {
       this.orderCache.set(encryptedOrder.orderHash, {
         owner: userKeypair.publicKey,
         pool: poolAddress,
-        orderHash: Array.from(orderHashBuffer),
-        side: request.side === 'buy' ? { buy: {} } : { sell: {} },
+        orderHash: Buffer.from(orderHashBuffer).toString('hex'),
+        side: request.side === 'buy' ? 'BUY' : 'SELL',
         encryptedAmount: Array.from(Buffer.from(encryptedOrder.encryptedAmount.c1.x, 'hex')),
         encryptedPrice: Array.from(Buffer.from(encryptedOrder.encryptedPrice.c1.x, 'hex')),
         solvencyProof: Array.from(Buffer.from(solvencyProof.balanceCommitment, 'hex')),
-        status: { pending: {} },
-        submittedAt: this.blockchainService.getConnection().rpcEndpoint.includes('devnet') ? 
-          { toNumber: () => Date.now() } as any : 
-          { toNumber: () => Date.now() } as any,
-        matchedAt: null,
-        cancelledAt: null,
-        nonce: { toNumber: () => Math.floor(Math.random() * 1000000) } as any
+        status: 'pending',
+        submittedAt: Date.now()
       })
 
       return {
@@ -162,8 +157,7 @@ export class OnChainOrderService {
       
       const cachedOrder = this.orderCache.get(orderHash)
       if (cachedOrder) {
-        cachedOrder.status = { cancelled: {} }
-        cachedOrder.cancelledAt = { toNumber: () => Date.now() } as any
+        cachedOrder.status = 'cancelled'
       }
 
       console.log('Order cancelled:', txSignature)
@@ -188,7 +182,7 @@ export class OnChainOrderService {
       for (const order of pendingOrders) {
         const mockPrice = 150 + (Math.random() - 0.5) * 20
         const mockVolume = 1000 + Math.random() * 4000
-        const isBuy = 'buy' in order.side
+        const isBuy = order.side === 'BUY'
         
         const existing = priceMap.get(mockPrice) || { volume: 0, count: 0 }
         existing.volume += mockVolume
@@ -359,8 +353,7 @@ export class OnChainOrderService {
         const orderHashHex = Buffer.from(event.data.orderHash).toString('hex')
         const cached = this.orderCache.get(orderHashHex)
         if (cached) {
-          cached.status = { cancelled: {} }
-          cached.cancelledAt = { toNumber: () => Date.now() } as any
+          cached.status = 'cancelled'
         }
       }
     })
@@ -372,7 +365,7 @@ export class OnChainOrderService {
       const allOrders = await this.blockchainService.getUserOrders(userPublicKey)
       
       return allOrders
-        .sort((a, b) => b.submittedAt.toNumber() - a.submittedAt.toNumber())
+        .sort((a, b) => b.submittedAt - a.submittedAt)
         .slice(0, limit)
 
     } catch (error) {
