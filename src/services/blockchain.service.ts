@@ -47,7 +47,7 @@ export interface OnChainMatchingRound {
   matchingProof: number[]
   startedAt: BN
   completedAt: BN | null
-  status: { inProgress: {} } | { decryptionComplete: {} } | { completed: {} } | { failed: {} }
+  status: { inProgress: Record<string, never> } | { decryptionComplete: Record<string, never> } | { completed: Record<string, never> } | { failed: Record<string, never> }
 }
 
 export class BlockchainService {

@@ -3,6 +3,7 @@ import { BlockchainService, OnChainOrder, OnChainMatchingRound } from './blockch
 import { MatchingEngineRealService, MatchingResult } from '../crypto/matching.real.service'
 import { ThresholdRealService } from '../crypto/threshold.real.service'
 import { VRFRealService } from '../crypto/vrf.real.service'
+import { generateKeyPairSync } from 'crypto'
 
 export interface MatchingRoundResult {
   roundId: number
@@ -39,7 +40,7 @@ export class OnChainMatchingService {
   private constructor() {
     this.blockchainService = BlockchainService.getInstance()
     // MatchingEngineRealService needs a public key in constructor
-    const tempKeyPair = require('crypto').generateKeyPairSync('rsa', { modulusLength: 2048 })
+    const tempKeyPair = generateKeyPairSync('rsa', { modulusLength: 2048 })
     this.matchingEngine = new MatchingEngineRealService(tempKeyPair.publicKey)
     this.thresholdService = ThresholdRealService.getInstance()
     // VRFRealService uses static methods, no instance needed

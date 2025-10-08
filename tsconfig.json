@@ -42,6 +42,10 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/server.ts",
+    "src/api-server.ts",
+    "src/start.ts",
+    "src/services/order.service.ts"
   ]
 }
