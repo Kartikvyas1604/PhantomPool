@@ -1,6 +1,6 @@
 import { PublicKey, Keypair } from '@solana/web3.js'
 import { BlockchainService, OnChainOrder, OnChainPool } from './blockchain.service'
-import { ElGamalRealService } from '../crypto/elgamal.real.service'
+import { ElGamalRealService, EncryptedOrder, PlainOrder } from '../crypto/elgamal.real.service'
 import { BulletproofsRealService } from '../crypto/bulletproofs.real.service'
 import { VRFRealService } from '../crypto/vrf.real.service'
 
@@ -42,9 +42,10 @@ export class OnChainOrderService {
   
   private constructor() {
     this.blockchainService = BlockchainService.getInstance()
-    this.elgamalService = ElGamalRealService.getInstance()
-    this.bulletproofsService = BulletproofsRealService.getInstance()
-    this.vrfService = VRFRealService.getInstance()
+    // These services use static methods, so we don't need instances
+    this.elgamalService = {} as any // Placeholder since we use static methods
+    this.bulletproofsService = {} as any // Placeholder since we use static methods  
+    this.vrfService = {} as any // Placeholder since we use static methods
   }
 
   static getInstance(): OnChainOrderService {
@@ -56,8 +57,8 @@ export class OnChainOrderService {
 
   async initialize(): Promise<void> {
     await this.blockchainService.initialize()
-    await this.elgamalService.initialize()
-    await this.bulletproofsService.initialize()
+    // ElGamalRealService doesn't have initialize method
+    await BulletproofsRealService.initialize()
     
     this.subscribeToOrderEvents()
   }
@@ -75,27 +76,27 @@ export class OnChainOrderService {
         }
       }
 
-      const publicKey = this.elgamalService.getPublicKey()
+      const keyPair = ElGamalRealService.generateKeyPair()
+      const publicKey = keyPair.publicKey
       if (!publicKey) {
         throw new Error('ElGamal public key not available')
       }
 
-      const plainOrder = {
+      const plainOrder: PlainOrder = {
         walletAddress: request.walletAddress,
         amount: request.amount,
         limitPrice: request.limitPrice,
-        side: request.side,
+        side: request.side.toUpperCase() as 'BUY' | 'SELL',
         tokenPair: request.tokenPair,
         timestamp: Date.now(),
-        nonce: Math.random()
+        nonce: (Date.now() % 1000000).toString() // Generate nonce since it doesn't exist in request
       }
-
-      const encryptedOrder = await this.elgamalService.encryptOrder(plainOrder, publicKey)
       
-      const solvencyProof = await this.bulletproofsService.generateSolvencyProof(
-        request.amount,
-        request.walletAddress,
-        { balance: 10000, commitment: 'mock_commitment' }
+      const encryptedOrder = await ElGamalRealService.encryptOrder(plainOrder, publicKey)
+      
+      const solvencyProof = await BulletproofsRealService.generateSolvencyProof(
+        BigInt(10000 * 1000000), // Mock balance in base units  
+        BigInt(request.amount * 1000000) // Required amount in base units
       )
 
       const userKeypair = this.createKeypairFromSignature(request.signature)
@@ -105,10 +106,10 @@ export class OnChainOrderService {
       
       const txSignature = await this.blockchainService.submitEncryptedOrder(
         poolAddress,
-        Buffer.from(encryptedOrder.encryptedAmount.x.toString(16).padStart(64, '0'), 'hex'),
-        Buffer.from(encryptedOrder.encryptedPrice.x.toString(16).padStart(64, '0'), 'hex'),
+        Buffer.from(encryptedOrder.encryptedAmount.c1.x.padStart(64, '0'), 'hex'),
+        Buffer.from(encryptedOrder.encryptedPrice.c1.x.padStart(64, '0'), 'hex'),
         request.side,
-        Buffer.from(solvencyProof.commitment),
+        Buffer.from(solvencyProof.balanceCommitment, 'hex'),
         orderHashBuffer,
         userKeypair
       )
@@ -118,9 +119,9 @@ export class OnChainOrderService {
         pool: poolAddress,
         orderHash: Array.from(orderHashBuffer),
         side: request.side === 'buy' ? { buy: {} } : { sell: {} },
-        encryptedAmount: Array.from(Buffer.from(encryptedOrder.encryptedAmount.x.toString(16), 'hex')),
-        encryptedPrice: Array.from(Buffer.from(encryptedOrder.encryptedPrice.x.toString(16), 'hex')),
-        solvencyProof: Array.from(Buffer.from(solvencyProof.commitment)),
+        encryptedAmount: Array.from(Buffer.from(encryptedOrder.encryptedAmount.c1.x, 'hex')),
+        encryptedPrice: Array.from(Buffer.from(encryptedOrder.encryptedPrice.c1.x, 'hex')),
+        solvencyProof: Array.from(Buffer.from(solvencyProof.balanceCommitment, 'hex')),
         status: { pending: {} },
         submittedAt: this.blockchainService.getConnection().rpcEndpoint.includes('devnet') ? 
           { toNumber: () => Date.now() } as any : 
@@ -306,8 +307,10 @@ export class OnChainOrderService {
     let pool = await this.blockchainService.getPool(tokenPair)
     
     if (!pool) {
-      const elgamalPublicKey = this.elgamalService.getPublicKey()
-      const vrfPublicKey = this.vrfService.getPublicKey()
+      const keyPair = ElGamalRealService.generateKeyPair()
+      const elgamalPublicKey = keyPair.publicKey
+      const vrfKeyPair = await VRFRealService.generateKeyPair()  
+      const vrfPublicKey = vrfKeyPair.publicKey
       
       if (!elgamalPublicKey || !vrfPublicKey) {
         throw new Error('Cryptographic keys not available')
@@ -317,8 +320,8 @@ export class OnChainOrderService {
       
       await this.blockchainService.initializePool(
         tokenPair,
-        Buffer.from(elgamalPublicKey.x.toString(16).padStart(64, '0'), 'hex'),
-        Buffer.from(vrfPublicKey.toString(16).padStart(32, '0'), 'hex'),
+        Buffer.from(elgamalPublicKey.x, 'hex'),
+        Buffer.from(vrfPublicKey, 'hex'),
         authorityKeypair
       )
 
@@ -334,7 +337,7 @@ export class OnChainOrderService {
 
   private verifySignature(request: { walletAddress: string; signature: string }): boolean {
     try {
-      return request.signature && request.signature.length > 50
+      return typeof request.signature === 'string' && request.signature.length > 50
     } catch (error) {
       return false
     }
