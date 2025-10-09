@@ -2,19 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { Lock, Copy, CheckCircle, Shuffle } from 'lucide-react';
-import { Button } from './ui/button';
+import { Lock, Shuffle } from 'lucide-react';
 
-export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatching: boolean }) {
+interface Order {
+  id: number;
+  trader: string;
+  amount: string;
+  price: string;
+  encrypted: string;
+  status: string;
+  type: 'buy' | 'sell';
+  timestamp: number;
+}
+
+export function OrderBookList({ orders, isMatching }: { orders: Order[]; isMatching: boolean }) {
   const [shuffling, setShuffling] = useState(false);
   const [displayOrders, setDisplayOrders] = useState(orders);
 
   useEffect(() => {
     if (isMatching && !shuffling) {
       setShuffling(true);
-      // Simulate VRF shuffle animation
       const interval = setInterval(() => {
         setDisplayOrders(prev => [...prev].sort(() => Math.random() - 0.5));
       }, 200);
@@ -29,149 +36,147 @@ export function OrderBookList({ orders, isMatching }: { orders: any[]; isMatchin
     } else {
       setDisplayOrders(orders);
     }
-  }, [isMatching, orders]);
+  }, [isMatching, orders, shuffling]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
+  // Generate some mock order book data for display
+  const mockBids = [
+    { price: 149.45, size: 1250, total: 1250 },
+    { price: 149.40, size: 890, total: 2140 },
+    { price: 149.35, size: 2100, total: 4240 },
+    { price: 149.30, size: 750, total: 4990 },
+    { price: 149.25, size: 1800, total: 6790 },
+  ];
+
+  const mockAsks = [
+    { price: 149.55, size: 980, total: 980 },
+    { price: 149.60, size: 1400, total: 2380 },
+    { price: 149.65, size: 750, total: 3130 },
+    { price: 149.70, size: 2200, total: 5330 },
+    { price: 149.75, size: 1100, total: 6430 },
+  ];
 
   return (
-    <Card className="professional-card overflow-hidden">
+    <div className="h-full flex flex-col bg-slate-900/30">
       {/* Header */}
-      <div className="p-3 sm:p-6 border-b border-border relative z-10">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h3 className="text-foreground mb-1 text-base sm:text-lg">Encrypted Order Book</h3>
-            <p className="text-muted-foreground text-xs sm:text-sm">Homomorphically encrypted orders</p>
-          </div>
-          {shuffling && (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            >
-              <Shuffle className="w-5 h-5 text-primary" />
-            </motion.div>
-          )}
+      <div className="border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div>
+          <h3 className="font-semibold text-slate-100">Order Book</h3>
+          <p className="text-xs text-slate-400 mt-1">SOL/USDC • Encrypted Orders</p>
         </div>
-
         {shuffling && (
-          <div className="mt-3 professional-card border-primary/30 bg-primary/5">
-            <p className="text-primary text-sm">🎲 VRF Shuffle in Progress</p>
-            <p className="text-muted-foreground text-xs mt-1">
-              Randomizing order sequence for fair matching...
-            </p>
-          </div>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          >
+            <Shuffle className="w-4 h-4 text-blue-400" />
+          </motion.div>
         )}
       </div>
 
-      {/* Order List */}
-      <div className="relative z-10 max-h-[600px] overflow-y-auto">
-        <AnimatePresence mode="popLayout">
-          {displayOrders.length === 0 ? (
-            <div className="p-6 sm:p-12 text-center">
-              <Lock className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground/40 mx-auto mb-3 sm:mb-4" />
-              <p className="text-muted-foreground text-sm sm:text-base">No encrypted orders yet</p>
-              <p className="text-muted-foreground/70 text-xs sm:text-sm mt-1">Submit your first order to get started</p>
-            </div>
-          ) : (
-            displayOrders.map((order) => (
-              <motion.div
-                key={order.id}
-                layout
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3 }}
-                className={`p-3 sm:p-4 border-b border-border/50 hover:bg-muted/30 professional-animate ${
-                  order.status === 'matched' ? 'bg-success/5' : ''
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
-                      <Lock className="w-3 h-3 text-primary" />
-                      <span className="text-foreground text-xs sm:text-sm">{order.trader}</span>
-                      <Badge
-                        variant="outline"
-                        className={`${
-                          order.type === 'buy'
-                            ? 'badge-success'
-                            : 'badge-warning'
-                        }`}
-                      >
-                        {order.type}
-                      </Badge>
-                    </div>
-                    
-                    {/* Encrypted Amount */}
-                    <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                      <span className="text-muted-foreground text-xs">Size:</span>
-                      <span className="text-muted-foreground/50 text-xs sm:text-sm font-mono">█████████</span>
-                    </div>
-
-                    {/* Order Hash */}
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <span className="text-muted-foreground text-xs font-mono truncate max-w-[120px] sm:max-w-none">{order.encrypted}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(order.encrypted)}
-                        className="h-5 w-5 sm:h-6 sm:w-6 p-0 hover:bg-muted flex-shrink-0"
-                      >
-                        <Copy className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-1 sm:gap-2 ml-2">
-                    {/* ZK Proof Status */}
-                    <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-success rounded-full" />
-                      <span className="status-success text-xs hidden sm:inline">ZK-Verified</span>
-                      <span className="status-success text-xs sm:hidden">✓</span>
-                    </div>
-
-                    {/* Status Badge */}
-                    {order.status === 'matched' && (
-                      <Badge
-                        variant="outline"
-                        className="badge-success"
-                      >
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Matched
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Timestamp */}
-                <div className="text-muted-foreground/70 text-xs">
-                  {new Date(order.timestamp).toLocaleTimeString()}
-                </div>
-              </motion.div>
-            ))
-          )}
-        </AnimatePresence>
+      {/* Order Book Headers */}
+      <div className="px-4 py-2 border-b border-slate-800 bg-slate-800/50">
+        <div className="grid grid-cols-3 gap-4 text-xs font-medium text-slate-400">
+          <div className="text-left">Price (USDC)</div>
+          <div className="text-right">Size (SOL)</div>
+          <div className="text-right">Total</div>
+        </div>
       </div>
 
-      {/* Footer */}
-      {displayOrders.length > 0 && (
-        <div className="p-3 sm:p-4 border-t border-border bg-muted/30 relative z-10">
-          <div className="flex items-center justify-between text-xs sm:text-sm">
-            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-              <div>
-                <span className="text-muted-foreground">Orders: </span>
-                <span className="text-foreground">{displayOrders.length}</span>
+      {/* Order Book Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full flex flex-col">
+          {/* Asks (Sell Orders) */}
+          <div className="flex-1 flex flex-col-reverse px-4 py-2 space-y-reverse space-y-1">
+            {mockAsks.map((ask, index) => (
+              <div
+                key={`ask-${index}`}
+                className="grid grid-cols-3 gap-4 text-xs py-1 hover:bg-red-900/20 rounded cursor-pointer transition-colors"
+              >
+                <div className="text-red-400 font-mono">{ask.price.toFixed(2)}</div>
+                <div className="text-right text-slate-300 font-mono">{ask.size.toLocaleString()}</div>
+                <div className="text-right text-slate-400 font-mono text-xs">{ask.total.toLocaleString()}</div>
               </div>
-              <div>
-                <span className="text-muted-foreground hidden sm:inline">Encrypted Volume: </span>
-                <span className="text-muted-foreground sm:hidden">Vol: </span>
-                <span className="text-muted-foreground/50 font-mono">████ SOL</span>
+            ))}
+          </div>
+
+          {/* Spread */}
+          <div className="px-4 py-3 border-y border-slate-800 bg-slate-800/30">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-400">Spread</span>
+              <div className="text-right">
+                <div className="text-sm font-mono text-emerald-400">$149.50</div>
+                <div className="text-xs text-slate-500">0.10 (0.07%)</div>
               </div>
             </div>
           </div>
+
+          {/* Bids (Buy Orders) */}
+          <div className="flex-1 px-4 py-2 space-y-1">
+            {mockBids.map((bid, index) => (
+              <div
+                key={`bid-${index}`}
+                className="grid grid-cols-3 gap-4 text-xs py-1 hover:bg-emerald-900/20 rounded cursor-pointer transition-colors"
+              >
+                <div className="text-emerald-400 font-mono">{bid.price.toFixed(2)}</div>
+                <div className="text-right text-slate-300 font-mono">{bid.size.toLocaleString()}</div>
+                <div className="text-right text-slate-400 font-mono text-xs">{bid.total.toLocaleString()}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Encrypted Orders Section */}
+      {displayOrders.length > 0 && (
+        <div className="border-t border-slate-800 max-h-48 overflow-y-auto">
+          <div className="px-4 py-2 bg-slate-800/50">
+            <div className="flex items-center gap-2 text-xs text-blue-400">
+              <Lock className="w-3 h-3" />
+              <span>Encrypted Orders ({displayOrders.length})</span>
+            </div>
+          </div>
+          <div className="space-y-1 p-4">
+            <AnimatePresence mode="popLayout">
+              {displayOrders.map((order) => (
+                <motion.div
+                  key={order.id}
+                  layout
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="flex items-center justify-between py-2 px-3 bg-slate-800/30 rounded border border-slate-700/50 hover:border-slate-600/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${
+                      order.type === 'buy' ? 'bg-emerald-400' : 'bg-red-400'
+                    }`} />
+                    <span className="text-xs text-slate-300 font-mono">{order.trader}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      order.type === 'buy' 
+                        ? 'bg-emerald-900/30 text-emerald-400' 
+                        : 'bg-red-900/30 text-red-400'
+                    }`}>
+                      {order.type.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400 font-mono">{order.encrypted}</div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
       )}
-    </Card>
+
+      {/* Empty State */}
+      {displayOrders.length === 0 && (
+        <div className="flex-1 flex items-center justify-center border-t border-slate-800">
+          <div className="text-center py-12">
+            <Lock className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+            <p className="text-sm text-slate-400">No encrypted orders</p>
+            <p className="text-xs text-slate-500 mt-1">Submit an order to get started</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

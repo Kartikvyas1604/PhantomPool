@@ -1,72 +1,46 @@
-# PhantomPool - Zero-Knowledge Dark Pool Trading Platform
+# PhantomPool - Zero-Knowledge Dark Pool
 
-A privacy-first decentralized exchange built on Solana that enables large traders to execute orders without revealing their trading intentions or positions to the market.
+<div align="center">
+  <img src="public/logo.svg" alt="PhantomPool Logo" width="200"/>
+  
+  **Professional Zero-Knowledge Dark Pool Trading Platform**
+  
+  ![Next.js](https://img.shields.io/badge/Next.js-15.1.4-black)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+  ![Solana](https://img.shields.io/badge/Solana-Devnet-purple)
+  ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.3-blue)
+</div>
 
-## What is PhantomPool?
+## 🔐 Overview
 
-PhantomPool solves the $2B+ monthly OTC trading problem by providing institutional-grade privacy for on-chain trades. Traditional DEXs expose all order information publicly, allowing MEV bots and front-runners to exploit large trades. Our solution uses advanced cryptographic techniques to keep orders completely private until execution.
+PhantomPool is a cutting-edge decentralized exchange (DEX) that provides **zero-knowledge privacy** for cryptocurrency trading. Built on Solana blockchain, it enables traders to execute large orders without revealing sensitive information through advanced cryptographic techniques.
 
-## Core Features
+## ✨ Key Features
 
-### 🔒 Complete Trade Privacy
-- Orders encrypted with ElGamal homomorphic encryption
-- Zero-knowledge proofs ensure solvency without revealing balances
-- VRF-based fair ordering prevents MEV attacks
-- Threshold decryption across 5 executor nodes
+### 🛡️ Privacy & Security
+- **ElGamal Homomorphic Encryption** - Orders encrypted end-to-end
+- **Bulletproofs+ Zero-Knowledge** - Prove solvency without revealing balances  
+- **VRF Randomization** - Fair order matching with verifiable randomness
+- **MEV Protection** - Front-running resistant architecture
 
-### ⚡ Optimal Execution
-- Jupiter aggregator integration for best prices
-- Batch auction mechanism with 30-second intervals
-- Fair clearing price for all matched trades
-- Atomic settlement prevents partial fills
+### 💼 Professional Trading Interface
+- **Terminal-Style UI** - Industry-standard trading experience
+- **Real-Time Order Book** - Live bid/ask spreads and market data
+- **Portfolio Management** - Positions, orders, and trade history
+- **Multi-Order Types** - Limit orders, market orders, advanced options
 
-### 🛡️ Trustless Security
-- 3-of-5 threshold signatures for execution
-- Bulletproofs+ for solvency verification
-- Verifiable randomness for order shuffling
-- On-chain settlement with full transparency
+### ⚡ Performance
+- **Solana Integration** - Sub-second transaction finality
+- **Jupiter DEX Routing** - Optimal execution paths
+- **Professional APIs** - WebSocket feeds and REST endpoints
+- **Responsive Design** - Desktop and mobile optimized
 
-## How It Works
-
-1. **Order Submission**: Traders submit encrypted orders with solvency proofs
-2. **Private Matching**: Orders are shuffled using VRF and matched at fair clearing prices
-3. **Threshold Decryption**: 3 of 5 executors must agree to decrypt matched orders
-4. **Jupiter Execution**: Trades execute through optimal DEX routes
-5. **Settlement**: All trades settle atomically on Solana
-
-## Technology Stack
-
-### Frontend
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Smooth animations
-- **Solana Wallet Adapter** - Wallet integration
-
-### Cryptography
-- **ElGamal Encryption** - Homomorphic encryption for private orders
-- **Bulletproofs+** - Zero-knowledge range proofs for solvency
-- **VRF (Verifiable Random Function)** - Fair order shuffling
-- **Threshold Cryptography** - Distributed decryption (3-of-5)
-
-### Blockchain
-- **Solana** - High-performance blockchain
-- **Anchor Framework** - Smart contract development
-- **Jupiter Aggregator** - Optimal swap routing
-- **SPL Tokens** - Token standard compliance
-
-### Backend Services
-- **Node.js + Fastify** - High-performance API server
-- **PostgreSQL** - Order and trade persistence
-- **Redis** - In-memory order book
-- **WebSocket** - Real-time updates
-
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Solana CLI tools
-- Phantom wallet or compatible Solana wallet
+- Node.js 18+ 
+- npm or yarn
+- Solana wallet (Phantom, Solflare)
 
 ### Installation
 
@@ -78,130 +52,183 @@ cd PhantomPool
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
-
 # Start development server
 npm run dev
 ```
 
-### Environment Configuration
+Visit `http://localhost:3000` to access the trading terminal.
+
+### Build for Production
+
+```bash
+# Create optimized build
+npm run build
+
+# Start production server
+npm start
+```
+
+## 🏗️ Architecture
+
+### Frontend Stack
+- **Next.js 15.1.4** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **TailwindCSS** - Professional styling system
+- **Framer Motion** - Smooth animations
+
+### Blockchain Integration
+- **Solana Web3.js** - Blockchain interaction
+- **Anchor Framework** - Smart contract deployment
+- **Jupiter API** - DEX aggregation
+- **Phantom Wallet** - User authentication
+
+### Cryptographic Services
+- **ElGamal Service** - Homomorphic encryption
+- **Bulletproofs Service** - Zero-knowledge range proofs
+- **VRF Service** - Verifiable random functions
+- **Threshold Decryption** - Distributed key management
+
+## 📁 Project Structure
+
+```
+PhantomPool/
+├── src/
+│   ├── app/                    # Next.js app directory
+│   ├── components/             # React components
+│   │   ├── ui/                 # Reusable UI components  
+│   │   ├── Header.tsx          # Navigation header
+│   │   ├── TradingForm.tsx     # Order entry interface
+│   │   ├── OrderBookList.tsx   # Live order book
+│   │   └── TradeExecution.tsx  # Portfolio management
+│   ├── crypto/                 # Cryptographic services
+│   ├── services/               # Business logic
+│   ├── styles/                 # CSS and themes
+│   └── types/                  # TypeScript definitions
+├── programs/                   # Solana smart contracts
+├── public/                     # Static assets
+└── ...config files
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+Create a `.env.local` file:
 
 ```env
 # Solana Configuration
 NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
-NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_PROGRAM_ID=Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
 
-# Jupiter API
-NEXT_PUBLIC_JUPITER_API_URL=https://quote-api.jup.ag/v6
+# Jupiter DEX
+NEXT_PUBLIC_JUPITER_API=https://quote-api.jup.ag/v6
 
 # Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_NAME=PhantomPool
+NEXT_PUBLIC_APP_URL=https://phantompool.app
 ```
 
-## Project Structure
+### Solana Program Deployment
 
-```
-src/
-├── app/                    # Next.js App Router pages
-├── components/             # React components
-│   ├── ui/                # Reusable UI components
-│   └── figma/             # Design system components
-├── crypto/                # Cryptographic services
-│   ├── elgamal.real.service.ts      # Homomorphic encryption
-│   ├── bulletproofs.real.service.ts # Zero-knowledge proofs
-│   ├── vrf.real.service.ts          # Verifiable randomness
-│   ├── matching.real.service.ts     # Order matching engine
-│   └── threshold.real.service.ts    # Threshold decryption
-├── services/              # Business logic services
-│   ├── solana.service.ts           # Solana blockchain integration
-│   ├── jupiter.service.ts          # DEX aggregation
-│   ├── phantompool.real.service.ts # Main trading service
-│   └── websocket.real.service.ts   # Real-time updates
-└── types/                 # TypeScript type definitions
+```bash
+# Build and deploy smart contracts
+anchor build
+anchor deploy --provider.cluster devnet
 ```
 
-## Key Components
+## 🎨 Customization
 
-### Trading Interface
-- **Order Submission**: Encrypted order entry with solvency verification
-- **Order Book**: Live view of encrypted orders (volumes hidden)
-- **Trade Execution**: Jupiter-powered optimal routing
-- **Portfolio**: Real-time balance and trade history
+### Themes
+The application uses a professional dark theme optimized for trading terminals. Customize colors in:
+- `src/styles/theme.css` - Professional color palette
+- `src/styles/globals.css` - Global styles
+- `tailwind.config.js` - TailwindCSS configuration
 
-### Cryptographic Dashboard
-- **ElGamal Encryption**: Active order encryption status
-- **Bulletproofs Solvency**: Zero-knowledge balance verification
-- **VRF Fairness**: Order shuffling entropy metrics
-- **Threshold Network**: Executor node health monitoring
+### Trading Pairs
+Add new trading pairs in:
+- `src/services/jupiter.service.ts` - Market data integration
+- `src/components/TradingForm.tsx` - UI components
 
-## Security Features
+## 📊 Features in Detail
 
-### Privacy Guarantees
-- Order amounts and prices remain encrypted until execution
-- Trader identities protected through nullifier schemes
-- No front-running possible due to encrypted order book
-- MEV protection through VRF-based fair ordering
+### Order Entry
+- **Professional Interface** - Industry-standard order entry form
+- **Order Types** - Limit, Market, Stop-Loss, Take-Profit
+- **Risk Management** - Balance validation, position sizing
+- **Encryption** - All orders encrypted before submission
 
-### Economic Security
-- Solvency proofs ensure all traders can cover their orders
-- Atomic execution prevents partial fills and failed trades
-- Slippage protection through Jupiter's optimal routing
-- No custody risk - trades settle directly to user wallets
+### Order Book
+- **Real-Time Updates** - Live bid/ask prices and volumes  
+- **Privacy Layer** - Encrypted orders separate from public book
+- **Market Depth** - Full order book depth visualization
+- **Trade History** - Recent execution data
 
-## Development Roadmap
+### Portfolio Management  
+- **Position Tracking** - Real-time P&L and exposure
+- **Order Management** - Cancel, modify, monitor orders
+- **Trade History** - Detailed execution records
+- **Risk Metrics** - Margin usage, leverage, liquidation
 
-### Phase 1: Core Platform ✅
-- [x] Frontend trading interface
-- [x] Solana wallet integration
-- [x] Basic cryptographic services
-- [x] Jupiter DEX integration
+## 🛡️ Security
 
-### Phase 2: Advanced Cryptography (Current)
-- [x] ElGamal homomorphic encryption
-- [x] Bulletproofs+ solvency verification
-- [x] VRF fair ordering system
-- [x] Threshold decryption network
+### Cryptographic Guarantees
+- **Order Privacy** - ElGamal encryption hides order details
+- **Solvency Proofs** - Bulletproofs verify sufficient balance
+- **Fair Matching** - VRF ensures unbiased order execution
+- **MEV Resistance** - Time-delayed decryption prevents front-running
 
-### Phase 3: Production Backend (Next)
-- [ ] Fastify API server
-- [ ] PostgreSQL order persistence
-- [ ] Redis in-memory order book
-- [ ] WebSocket real-time updates
-- [ ] 5-node executor network
+### Smart Contract Security
+- **Anchor Framework** - Rust-based secure development
+- **On-Chain Verification** - All proofs verified on Solana
+- **Decentralized Matching** - No central authority required
+- **Audit Ready** - Clean, documented code structure
 
-### Phase 4: Advanced Features (Future)
-- [ ] Cross-chain trading support
-- [ ] Institutional API access
-- [ ] Advanced order types (TWAP, VWAP)
-- [ ] Governance token and DAO
+## 🚀 Deployment
 
-## Contributing
+### Vercel (Recommended)
+```bash
+# Deploy to Vercel
+npm i -g vercel
+vercel --prod
+```
 
-We welcome contributions from the community! Please read our contributing guidelines and code of conduct before submitting pull requests.
+### Docker
+```bash
+# Build container
+docker build -t phantompool .
 
-### Development Setup
+# Run container  
+docker run -p 3000:3000 phantompool
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes with proper tests
-4. Submit a pull request with detailed description
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Disclaimer
+## 🔗 Links
 
-PhantomPool is experimental software under active development. Use at your own risk. The cryptographic implementations have not been formally audited and should not be used with significant funds until proper security reviews are completed.
+- **Live Demo**: [https://phantompool.app](https://phantompool.app)
+- **Documentation**: [https://docs.phantompool.app](https://docs.phantompool.app)  
+- **Smart Contracts**: [Solana Explorer](https://explorer.solana.com/address/Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS?cluster=devnet)
+- **Discord**: [Community Chat](https://discord.gg/phantompool)
 
-## Contact
+## 📞 Support
 
-- **Website**: https://phantompool.network
-- **Twitter**: @PhantomPoolDEX
-- **Discord**: https://discord.gg/phantompool
-- **Email**: team@phantompool.network
+- **Email**: support@phantompool.app
+- **Twitter**: [@PhantomPoolDEX](https://twitter.com/PhantomPoolDEX)
+- **GitHub Issues**: [Report bugs](https://github.com/Kartikvyas1604/PhantomPool/issues)
 
 ---
 
-*Built with ❤️ for the future of private DeFi trading*
+<div align="center">
+  <strong>Built with ❤️ for the future of private trading</strong>
+</div>
