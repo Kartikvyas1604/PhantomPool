@@ -223,7 +223,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#00f0ff]/20 bg-gradient-to-r from-[#0a0118]/95 via-[#1a0b2e]/95 to-[#0a0118]/95 backdrop-blur-xl w-full min-w-0">
+    <header className="professional-header sticky top-0 z-50 w-full min-w-0">
       <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-8 h-14 xs:h-16 sm:h-20 md:h-21 min-w-0">
         <div className="flex flex-wrap items-center justify-between h-full min-w-0">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -237,23 +237,18 @@ export function Header() {
               />
             </div>
             <div>
-              <h1 className="text-sm sm:text-lg md:text-xl font-bold bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] bg-clip-text text-transparent">
+              <h1 className="text-sm sm:text-lg md:text-xl font-bold text-foreground">
                 PhantomPool
               </h1>
-              <p className="text-xs sm:text-sm text-[#b4b4b4] -mt-1 hidden sm:block">Zero-Knowledge Dark Pool</p>
+              <p className="text-xs sm:text-sm text-muted-foreground -mt-1 hidden sm:block">Zero-Knowledge Dark Pool</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-[#00ff88]/10 border border-[#00ff88]/30 backdrop-blur-sm">
-              <div className="relative">
-                <Zap className="w-4 h-4 text-[#00ff88]" />
-                <div className="absolute inset-0 w-4 h-4 text-[#00ff88] animate-ping opacity-30">
-                  <Zap className="w-4 h-4" />
-                </div>
-              </div>
-              <span className="text-[#00ff88] text-sm font-medium">Encryption Active</span>
+            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg badge-success">
+              <Zap className="w-4 h-4" />
+              <span className="text-sm font-medium">Encryption Active</span>
             </div>
-            <Badge className="hidden md:flex bg-[#ff00e5]/10 border-[#ff00e5]/30 text-[#ff00e5] hover:bg-[#ff00e5]/20 gap-2 px-2 sm:px-3 py-1">
+            <Badge className="hidden md:flex badge-info gap-2 px-2 sm:px-3 py-1 rounded-lg">
               <Activity className="w-3 h-3" />
               <span className="hidden sm:inline">Solana Devnet</span>
               <span className="sm:hidden">Devnet</span>
@@ -262,7 +257,7 @@ export function Header() {
               <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full max-w-xs xs:max-w-none">
                 <Button
                   onClick={disconnect}
-                  className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium text-xs xs:text-sm sm:text-base cursor-pointer truncate w-full xs:w-auto transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25"
+                  className="btn-primary px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-lg font-medium text-xs xs:text-sm sm:text-base cursor-pointer truncate w-full xs:w-auto"
                 >
                   <Wallet className="w-4 h-4 xs:mr-2" />
                   <span className="hidden xs:inline">{wallet.slice(0, 4)}...{wallet.slice(-4)}</span>
@@ -270,46 +265,46 @@ export function Header() {
                 </Button>
                 <Button
                   onClick={disconnect}
-                  className="hidden xs:inline-flex bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 py-2 rounded-xl font-medium text-xs xs:text-sm sm:text-base transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25 w-full xs:w-auto"
+                  className="hidden xs:inline-flex btn-secondary px-2 xs:px-3 sm:px-4 py-2 rounded-lg font-medium text-xs xs:text-sm sm:text-base w-full xs:w-auto"
                 >
                   <span className="truncate">Disconnect</span>
                 </Button>
                 <Dialog open={showDisconnect} onOpenChange={setShowDisconnect}>
-                  <DialogOverlay className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn" />
-                  <DialogContent className="bg-gradient-to-br from-[#1a0b2e] to-[#0a0118] border border-[#00f0ff]/30 rounded-2xl shadow-2xl p-8 max-w-sm mx-auto animate-scaleIn">
-                    <DialogTitle className="text-lg font-semibold text-white mb-2">Disconnect Wallet</DialogTitle>
-                    <DialogDescription className="text-[#b4b4b4] mb-6">Are you sure you want to disconnect your wallet?</DialogDescription>
+                  <DialogOverlay className="fixed inset-0 bg-black/60 backdrop-filter backdrop-blur-sm" />
+                  <DialogContent className="professional-card professional-shadow-lg rounded-lg p-8 max-w-sm mx-auto">
+                    <DialogTitle className="text-lg font-semibold text-foreground mb-2">Disconnect Wallet</DialogTitle>
+                    <DialogDescription className="text-muted-foreground mb-6">Are you sure you want to disconnect your wallet?</DialogDescription>
                     <div className="flex gap-4 justify-end">
-                      <Button onClick={() => setShowDisconnect(false)} className="bg-[#232136] text-white px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-[#2a2740]">Cancel</Button>
-                      <Button onClick={confirmDisconnect} className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] text-white px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25">Disconnect</Button>
+                      <Button onClick={() => setShowDisconnect(false)} className="btn-secondary px-4 py-2 rounded-lg font-medium text-sm">Cancel</Button>
+                      <Button onClick={confirmDisconnect} className="btn-primary px-4 py-2 rounded-lg font-medium text-sm">Disconnect</Button>
                     </div>
                   </DialogContent>
                 </Dialog>
               </div>
             ) : (
               <>
-                <Button onClick={connect} disabled={connecting} className="bg-gradient-to-r from-[#00f0ff] to-[#ff00e5] hover:from-[#00f0ff]/90 hover:to-[#ff00e5]/90 text-white border-0 px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f0ff]/25 text-xs xs:text-sm sm:text-base xs:w-full w-auto">
+                <Button onClick={connect} disabled={connecting} className="btn-primary px-2 xs:px-3 sm:px-4 md:px-6 py-2 rounded-lg font-medium text-xs xs:text-sm sm:text-base xs:w-full w-auto">
                   <Wallet className="w-4 h-4 xs:mr-2" />
                   <span className="hidden xs:inline">{connecting ? 'Connecting...' : 'Connect Wallet'}</span>
                   <span className="xs:hidden ml-1">{connecting ? '...' : 'Connect'}</span>
                 </Button>
                 <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
-                  <DialogOverlay className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn" />
-                  <DialogContent className="bg-gradient-to-br from-[#1a0b2e] to-[#0a0118] border border-[#00f0ff]/30 rounded-2xl shadow-2xl p-8 max-w-sm mx-auto animate-scaleIn">
-                    <DialogTitle className="text-lg font-semibold text-white mb-2">Select Wallet</DialogTitle>
-                    <DialogDescription className="text-[#b4b4b4] mb-6">Choose a wallet to connect:</DialogDescription>
+                  <DialogOverlay className="fixed inset-0 bg-black/60 backdrop-filter backdrop-blur-sm" />
+                  <DialogContent className="professional-card professional-shadow-lg rounded-lg p-8 max-w-sm mx-auto">
+                    <DialogTitle className="text-lg font-semibold text-foreground mb-2">Select Wallet</DialogTitle>
+                    <DialogDescription className="text-muted-foreground mb-6">Choose a wallet to connect:</DialogDescription>
                     <div className="flex flex-col gap-3">
                       {availableWallets.length === 0 && (
-                        <div className="text-[#ff00e5] text-center">No Solana wallet extension detected.<br/>Please install Phantom or another supported wallet.</div>
+                        <div className="text-destructive text-center">No Solana wallet extension detected.<br/>Please install Phantom or another supported wallet.</div>
                       )}
                       {availableWallets.map(w => (
                         <Button
                           key={w.id}
                           onClick={() => connectWallet(w.id)}
-                          className="flex items-center justify-center gap-2 bg-[#18122b] hover:bg-[#232136] text-white px-6 py-2 rounded-xl font-medium text-base transition-all duration-200 w-auto min-w-[160px] mx-auto"
+                          className="flex items-center justify-center gap-2 btn-secondary px-6 py-2 rounded-lg font-medium text-base w-auto min-w-[160px] mx-auto"
                           style={{ minWidth: 160 }}
                         >
-                          <img src={w.icon} alt={w.name} className="w-6 h-6" />
+                          <Image src={w.icon} alt={w.name} width={24} height={24} className="w-6 h-6" />
                           <span className="truncate text-center w-full">{w.name}</span>
                         </Button>
                       ))}

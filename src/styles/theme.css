@@ -1,0 +1,244 @@
+/* Professional Dark Theme for PhantomPool */
+
+:root {
+  /* Core Colors */
+  --background: 0 0% 4%; /* #0a0a0a - Deep black */
+  --foreground: 0 0% 95%; /* #f2f2f2 - Clean white */
+  --muted: 0 0% 8%; /* #141414 - Dark gray */
+  --muted-foreground: 0 0% 65%; /* #a6a6a6 - Medium gray */
+  --popover: 0 0% 6%; /* #0f0f0f - Slightly lighter black */
+  --popover-foreground: 0 0% 95%; /* #f2f2f2 */
+  
+  /* Card and Surface Colors */
+  --card: 0 0% 6%; /* #0f0f0f - Dark surface */
+  --card-foreground: 0 0% 95%; /* #f2f2f2 */
+  
+  /* Interactive Elements */
+  --primary: 210 100% 50%; /* #0080ff - Professional blue */
+  --primary-foreground: 0 0% 100%; /* Pure white */
+  --secondary: 0 0% 12%; /* #1f1f1f - Dark secondary */
+  --secondary-foreground: 0 0% 95%; /* #f2f2f2 */
+  
+  /* Form Elements */
+  --accent: 0 0% 14%; /* #242424 - Accent color */
+  --accent-foreground: 0 0% 95%; /* #f2f2f2 */
+  --input: 0 0% 18%; /* #2e2e2e - Input background */
+  --input-background: 0 0% 8%; /* #141414 - Input field background */
+  
+  /* Border and Ring */
+  --border: 0 0% 18%; /* #2e2e2e - Subtle border */
+  --ring: 210 100% 50%; /* #0080ff - Focus ring (same as primary) */
+  
+  /* Status Colors */
+  --destructive: 0 84% 60%; /* #e74c3c - Professional red */
+  --destructive-foreground: 0 0% 98%; /* Near white */
+  
+  /* Layout */
+  --radius: 8px; /* Moderate border radius for professional look */
+  
+  /* Success/Buy Color */
+  --success: 142 76% 36%; /* #22c55e - Professional green */
+  --success-foreground: 0 0% 98%;
+  
+  /* Warning/Sell Color */
+  --warning: 25 95% 53%; /* #f97316 - Professional orange */
+  --warning-foreground: 0 0% 98%;
+  
+  /* Info Color */
+  --info: 199 89% 48%; /* #0ea5e9 - Professional light blue */
+  --info-foreground: 0 0% 98%;
+}
+
+/* Add support for dark mode variants */
+.dark {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 210 100% 50%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 0 0% 83.1%;
+}
+
+/* Professional Typography */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  line-height: 1.6;
+}
+
+/* Remove all gradients and implement solid professional colors */
+.no-gradients * {
+  background-image: none !important;
+}
+
+/* Professional shadows */
+.professional-shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.professional-shadow-lg {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Professional button styles */
+.btn-primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: 1px solid hsl(var(--primary));
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: hsl(210 100% 45%);
+  border-color: hsl(210 100% 45%);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border: 1px solid hsl(var(--border));
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--primary));
+}
+
+/* Professional card styles */
+.professional-card {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.professional-card:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Professional form elements */
+.professional-input {
+  background-color: hsl(var(--input-background));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  color: hsl(var(--foreground));
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.professional-input:focus {
+  border-color: hsl(var(--primary));
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.professional-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Status indicators */
+.status-success {
+  color: hsl(var(--success));
+}
+
+.status-warning {
+  color: hsl(var(--warning));
+}
+
+.status-error {
+  color: hsl(var(--destructive));
+}
+
+.status-info {
+  color: hsl(var(--info));
+}
+
+/* Professional header */
+.professional-header {
+  background-color: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+/* Remove animations for professional look */
+@media (prefers-reduced-motion: no-preference) {
+  .professional-animate {
+    transition: all 0.2s ease-in-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Professional table styles */
+.professional-table {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+.professional-table th {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.professional-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.professional-table tr:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Professional badge styles */
+.badge-success {
+  background-color: hsl(var(--success) / 0.1);
+  color: hsl(var(--success));
+  border: 1px solid hsl(var(--success) / 0.2);
+}
+
+.badge-warning {
+  background-color: hsl(var(--warning) / 0.1);
+  color: hsl(var(--warning));
+  border: 1px solid hsl(var(--warning) / 0.2);
+}
+
+.badge-info {
+  background-color: hsl(var(--info) / 0.1);
+  color: hsl(var(--info));
+  border: 1px solid hsl(var(--info) / 0.2);
+}
+
+.badge-error {
+  background-color: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
+  border: 1px solid hsl(var(--destructive) / 0.2);
+}

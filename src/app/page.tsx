@@ -84,25 +84,17 @@ export default function HomePage() {
   // Removed unused resetDemo function
 
   return (
-  <div className="min-h-screen bg-[#0a0118] relative overflow-hidden w-full min-w-0">
-      {/* Spline 3D Background */}
-      <ClientOnly>
-        <SplineBackground />
-      </ClientOnly>
-      
-      {/* Gradient Overlays */}
-  <div className="fixed inset-0 bg-gradient-to-br from-[#0a0118] via-[#1a0b2e] to-[#0a0118] pointer-events-none w-full min-w-0" />
-      
-  {/* Content */}
+  <div className="min-h-screen bg-background relative w-full min-w-0">      
+      {/* Content */}
   <main className="w-full max-w-7xl mx-auto px-1 xs:px-2 sm:px-4 md:px-8 min-w-0">
     <div className="relative z-10">
       <Header />
       {/* Demo Status Bar */}
       {demoStatus && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
-          <div className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 flex items-center justify-center">
-            <div className="flex items-center gap-2 text-[#00ff88]">
-              <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse" />
+          <div className="professional-card border-success/30 bg-success/5">
+            <div className="flex items-center justify-center gap-2 status-success">
+              <div className="w-2 h-2 bg-success rounded-full" />
               <span className="font-medium text-sm sm:text-base">{demoStatus}</span>
             </div>
           </div>
@@ -110,21 +102,21 @@ export default function HomePage() {
       )}
       {/* Hero Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-10 md:mb-12">
-          <div className="bg-gradient-to-br from-[#00f0ff]/10 to-[#00f0ff]/5 border border-[#00f0ff]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#00f0ff] mb-1">256-bit</div>
-            <div className="text-xs sm:text-sm text-[#b4b4b4]">Encryption</div>
+          <div className="professional-card text-center hover:border-info/50">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold status-info mb-1">256-bit</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Encryption</div>
           </div>
-          <div className="bg-gradient-to-br from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#00ff88] mb-1">$2.4M</div>
-            <div className="text-xs sm:text-sm text-[#b4b4b4]">Volume Protected</div>
+          <div className="professional-card text-center hover:border-success/50">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold status-success mb-1">$2.4M</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Volume Protected</div>
           </div>
-          <div className="bg-gradient-to-br from-[#ff00e5]/10 to-[#ff00e5]/5 border border-[#ff00e5]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#ff00e5] mb-1">5/5</div>
-            <div className="text-xs sm:text-sm text-[#b4b4b4]">Validators</div>
+          <div className="professional-card text-center hover:border-primary/50">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-1">5/5</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Validators</div>
           </div>
-          <div className="bg-gradient-to-br from-[#ffaa00]/10 to-[#ffaa00]/5 border border-[#ffaa00]/20 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-center">
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#ffaa00] mb-1">99.9%</div>
-            <div className="text-xs sm:text-sm text-[#b4b4b4]">MEV Protection</div>
+          <div className="professional-card text-center hover:border-warning/50">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold status-warning mb-1">99.9%</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">MEV Protection</div>
           </div>
         </div>          {/* Main 3-Column Trading Interface */}
           <ClientOnly>

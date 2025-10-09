@@ -116,21 +116,21 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Token Pair Selector */}
-      <Card className="bg-gradient-to-br from-white/5 to-white/10 border-[#00f0ff]/20 backdrop-blur-xl">
+      <Card className="professional-card">
         <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between flex-wrap sm:flex-nowrap gap-3">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#00f0ff] to-[#ff00e5] rounded-full flex items-center justify-center">
-                <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center">
+                <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-white">SOL/USDC</h3>
-                <p className="text-xs sm:text-sm text-[#b4b4b4]">Solana / USD Coin</p>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">SOL/USDC</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">Solana / USD Coin</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg sm:text-2xl font-bold text-[#00ff88]">${marketPrice}</div>
-              <div className="text-xs sm:text-sm text-[#00ff88] flex items-center gap-1">
+              <div className="text-lg sm:text-2xl font-bold status-success">${marketPrice}</div>
+              <div className="text-xs sm:text-sm status-success flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
                 +2.34%
               </div>
@@ -140,28 +140,28 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
       </Card>
 
       {/* Main Trading Form */}
-      <Card className="bg-gradient-to-br from-white/5 to-white/10 border-[#00f0ff]/20 backdrop-blur-xl">
+      <Card className="professional-card">
         <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6 pt-4 sm:pt-6">
-          <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
-            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-[#00f0ff]/20 to-[#ff00e5]/20 rounded-lg">
-              <ArrowUpDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f0ff]" />
+          <CardTitle className="text-foreground flex items-center gap-2 text-base sm:text-lg">
+            <div className="p-1.5 sm:p-2 bg-primary/20 rounded-lg">
+              <ArrowUpDown className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             </div>
             Order Entry
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6 pb-4 sm:pb-6">
           <Tabs value={orderType} onValueChange={(value) => setOrderType(value as 'buy' | 'sell')}>
-            <TabsList className="grid w-full grid-cols-2 bg-black/40 p-1 rounded-xl">
+            <TabsList className="grid w-full grid-cols-2 bg-muted p-1 rounded-lg">
               <TabsTrigger 
                 value="buy" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00f0ff]/20 data-[state=active]:to-[#00f0ff]/10 data-[state=active]:text-[#00f0ff] text-[#b4b4b4] rounded-lg transition-all duration-300"
+                className="data-[state=active]:bg-success/20 data-[state=active]:text-success text-muted-foreground rounded-md professional-animate"
               >
                 <TrendingUp className="w-4 h-4 mr-2" />
                 Buy
               </TabsTrigger>
               <TabsTrigger 
                 value="sell"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#ff00e5]/20 data-[state=active]:to-[#ff00e5]/10 data-[state=active]:text-[#ff00e5] text-[#b4b4b4] rounded-lg transition-all duration-300"
+                className="data-[state=active]:bg-warning/20 data-[state=active]:text-warning text-muted-foreground rounded-md professional-animate"
               >
                 <TrendingDown className="w-4 h-4 mr-2" />
                 Sell
@@ -171,7 +171,7 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
             <TabsContent value="buy" className="space-y-6 mt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-3">
-                  <Label htmlFor="amount" className="text-[#b4b4b4] text-sm font-medium">Amount</Label>
+                  <Label htmlFor="amount" className="text-muted-foreground text-sm font-medium">Amount</Label>
                   <div className="relative group">
                     <Input
                       id="amount"
@@ -179,19 +179,19 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
+                      className="professional-input pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg"
                     />
                     <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
-                      <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f0ff]" />
-                      <span className="text-white font-medium text-sm sm:text-base">SOL</span>
+                      <Coins className="w-4 h-4 sm:w-5 sm:h-5 status-success" />
+                      <span className="text-foreground font-medium text-sm sm:text-base">SOL</span>
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#b4b4b4]">Balance: {balance.toLocaleString()} SOL</span>
+                    <span className="text-muted-foreground">Balance: {balance.toLocaleString()} SOL</span>
                     <button 
                       type="button" 
                       onClick={() => setAmount(balance.toString())}
-                      className="text-[#00f0ff] hover:text-[#00f0ff]/80 transition-colors"
+                      className="text-primary hover:text-primary/80 professional-animate"
                     >
                       MAX
                     </button>
@@ -199,7 +199,7 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="price" className="text-[#b4b4b4] text-sm font-medium">Price</Label>
+                  <Label htmlFor="price" className="text-muted-foreground text-sm font-medium">Price</Label>
                   <div className="relative group">
                     <Input
                       id="price"
@@ -207,14 +207,14 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder={marketPrice.toString()}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="bg-black/40 border-[#00f0ff]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#00f0ff] transition-all duration-300 group-hover:border-[#00f0ff]/50"
+                      className="professional-input pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg"
                     />
                     <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
-                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#00f0ff]" />
-                      <span className="text-white font-medium text-sm sm:text-base">USDC</span>
+                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <span className="text-foreground font-medium text-sm sm:text-base">USDC</span>
                     </div>
                   </div>
-                  <div className="text-sm text-[#b4b4b4]">
+                  <div className="text-sm text-muted-foreground">
                     Market Price: ${marketPrice}
                   </div>
                 </div>
@@ -222,16 +222,16 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !amount || !price}
-                  className={`w-full h-12 sm:h-14 text-base sm:text-lg font-semibold transition-all duration-300 ${
+                  className={`w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-lg ${
                     isSubmitting 
-                      ? 'bg-gradient-to-r from-[#00f0ff]/50 to-[#00f0ff]/30 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-[#00f0ff] to-[#00f0ff]/80 hover:from-[#00f0ff]/90 hover:to-[#00f0ff]/70 sm:hover:scale-105 hover:shadow-xl hover:shadow-[#00f0ff]/25'
-                  } text-white border-0 rounded-xl`}
+                      ? 'opacity-50 cursor-not-allowed btn-primary' 
+                      : 'btn-primary'
+                  }`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span className="hidden sm:inline">Encrypting Order...</span>
                       <span className="sm:hidden">Encrypting...</span>
                     </div>
@@ -249,7 +249,7 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
             <TabsContent value="sell" className="space-y-6 mt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-3">
-                  <Label htmlFor="sell-amount" className="text-[#b4b4b4] text-sm font-medium">Amount</Label>
+                  <Label htmlFor="sell-amount" className="text-muted-foreground text-sm font-medium">Amount</Label>
                   <div className="relative group">
                     <Input
                       id="sell-amount"
@@ -257,19 +257,19 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
+                      className="professional-input pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg"
                     />
                     <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
-                      <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff00e5]" />
-                      <span className="text-white font-medium text-sm sm:text-base">SOL</span>
+                      <Coins className="w-4 h-4 sm:w-5 sm:h-5 status-warning" />
+                      <span className="text-foreground font-medium text-sm sm:text-base">SOL</span>
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#b4b4b4]">Balance: {balance.toLocaleString()} SOL</span>
+                    <span className="text-muted-foreground">Balance: {balance.toLocaleString()} SOL</span>
                     <button 
                       type="button" 
                       onClick={() => setAmount(balance.toString())}
-                      className="text-[#ff00e5] hover:text-[#ff00e5]/80 transition-colors"
+                      className="text-warning hover:text-warning/80 professional-animate"
                     >
                       MAX
                     </button>
@@ -277,7 +277,7 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="sell-price" className="text-[#b4b4b4] text-sm font-medium">Price</Label>
+                  <Label htmlFor="sell-price" className="text-muted-foreground text-sm font-medium">Price</Label>
                   <div className="relative group">
                     <Input
                       id="sell-price"
@@ -285,14 +285,14 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                       placeholder={marketPrice.toString()}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="bg-black/40 border-[#ff00e5]/30 text-white pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg focus:border-[#ff00e5] transition-all duration-300 group-hover:border-[#ff00e5]/50"
+                      className="professional-input pr-16 sm:pr-20 h-10 sm:h-12 text-base sm:text-lg"
                     />
                     <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
-                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff00e5]" />
-                      <span className="text-white font-medium text-sm sm:text-base">USDC</span>
+                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <span className="text-foreground font-medium text-sm sm:text-base">USDC</span>
                     </div>
                   </div>
-                  <div className="text-sm text-[#b4b4b4]">
+                  <div className="text-sm text-muted-foreground">
                     Market Price: ${marketPrice}
                   </div>
                 </div>
@@ -300,16 +300,16 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !amount || !price}
-                  className={`w-full h-12 sm:h-14 text-base sm:text-lg font-semibold transition-all duration-300 ${
+                  className={`w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-lg ${
                     isSubmitting 
-                      ? 'bg-gradient-to-r from-[#ff00e5]/50 to-[#ff00e5]/30 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-[#ff00e5] to-[#ff00e5]/80 hover:from-[#ff00e5]/90 hover:to-[#ff00e5]/70 sm:hover:scale-105 hover:shadow-xl hover:shadow-[#ff00e5]/25'
-                  } text-white border-0 rounded-xl`}
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : ''
+                  } bg-warning hover:bg-warning/90 text-warning-foreground`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span className="hidden sm:inline">Encrypting Order...</span>
                       <span className="sm:hidden">Encrypting...</span>
                     </div>
@@ -327,30 +327,30 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
 
           {/* Order Preview */}
           {(amount && price) && (
-            <Card className="bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border-[#00ff88]/30 animate-in slide-in-from-top duration-300">
+            <Card className="professional-card border-success/30 bg-success/5">
               <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-[#00ff88] mb-2">
+                <div className="flex items-center gap-2 text-xs sm:text-sm status-success mb-2">
                   <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="font-medium">Order Preview (Encrypted)</span>
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-[#b4b4b4]">Type:</span>
-                    <span className={orderType === 'buy' ? 'text-[#00f0ff]' : 'text-[#ff00e5]'}>
+                    <span className="text-muted-foreground">Type:</span>
+                    <span className={orderType === 'buy' ? 'status-success' : 'status-warning'}>
                       {orderType.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#b4b4b4]">Amount:</span>
-                    <span className="text-white">{amount} SOL</span>
+                    <span className="text-muted-foreground">Amount:</span>
+                    <span className="text-foreground">{amount} SOL</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#b4b4b4]">Price:</span>
-                    <span className="text-white">${price}</span>
+                    <span className="text-muted-foreground">Price:</span>
+                    <span className="text-foreground">${price}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#b4b4b4]">Total:</span>
-                    <span className="text-white">${(parseFloat(amount || '0') * parseFloat(price || '0')).toFixed(2)}</span>
+                    <span className="text-muted-foreground">Total:</span>
+                    <span className="text-foreground">${(parseFloat(amount || '0') * parseFloat(price || '0')).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -358,14 +358,14 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
           )}
 
           {/* Privacy Guarantee */}
-          <div className="p-3 sm:p-4 bg-gradient-to-r from-[#00ff88]/10 to-[#00ff88]/5 border border-[#00ff88]/30 rounded-xl">
+          <div className="professional-card border-success/30 bg-success/5">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 bg-[#00ff88]/20 rounded-lg">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ff88]" />
+              <div className="p-1.5 sm:p-2 bg-success/20 rounded-lg">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 status-success" />
               </div>
               <div>
-                <div className="text-[#00ff88] font-medium text-sm sm:text-base">MEV Protection Active</div>
-                <div className="text-xs sm:text-sm text-[#b4b4b4]">Your order is encrypted and invisible to front-runners</div>
+                <div className="status-success font-medium text-sm sm:text-base">MEV Protection Active</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Your order is encrypted and invisible to front-runners</div>
               </div>
             </div>
           </div>

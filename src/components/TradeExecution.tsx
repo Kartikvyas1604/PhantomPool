@@ -53,43 +53,43 @@ export const TradeExecution = ({ isExecuting = false, onExecute, matchedTrades =
   }, []);
 
   return (
-    <Card className="bg-gradient-to-b from-black to-gray-900 border border-white/20 shadow-2xl">
+    <Card className="professional-card professional-shadow">
       <div className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-white">Trade Execution</h3>
-          <Badge variant="outline" className="text-[#00ff88] border-[#00ff88]">
+          <h3 className="text-lg font-bold text-foreground">Trade Execution</h3>
+          <Badge variant="outline" className="badge-success">
             Jupiter DEX
           </Badge>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between items-center py-2 border-b border-white/10">
-              <span className="text-[#b4b4b4] text-sm">Route</span>
-              <span className="text-white text-sm">{routeData.route}</span>
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-muted-foreground text-sm">Route</span>
+              <span className="text-foreground text-sm font-medium">{routeData.route}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-white/10">
-              <span className="text-[#b4b4b4] text-sm">Expected Output</span>
-              <span className="text-[#00ff88] text-sm">{routeData.expectedOutput}</span>
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-muted-foreground text-sm">Expected Output</span>
+              <span className="status-success text-sm font-medium">{routeData.expectedOutput}</span>
             </div>
             <div className="flex justify-between items-center py-2">
-              <span className="text-[#b4b4b4] text-sm">Price Impact</span>
-              <span className="text-[#00ff88] text-sm">{routeData.priceImpact}</span>
+              <span className="text-muted-foreground text-sm">Price Impact</span>
+              <span className="status-success text-sm font-medium">{routeData.priceImpact}</span>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-white/10">
+          <div className="pt-4 border-t border-border">
             <div className="flex gap-3">
               <Button 
                 onClick={onExecute}
                 disabled={isExecuting}
-                className="flex-1 bg-gradient-to-r from-[#00ff88] to-[#00cc6a] hover:from-[#00e676] hover:to-[#00b356] text-black font-semibold"
+                className="flex-1 bg-success hover:bg-success/90 text-success-foreground font-semibold"
               >
                 {isExecuting ? 'Executing...' : 'Execute Trade'}
               </Button>
               <Button 
                 variant="outline" 
-                className="border-white/20 text-white hover:bg-white/10"
+                className="btn-secondary"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Jupiter
