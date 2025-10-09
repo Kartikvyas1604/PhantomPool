@@ -5,6 +5,51 @@
 /* Import the professional theme */
 @import url('../styles/theme.css');
 
+/* Mobile Responsive Enhancements */
+@layer utilities {
+  /* Ensure proper mobile viewport handling */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* Touch-friendly tap targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent horizontal scroll on mobile */
+  .mobile-container {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Professional mobile gradients */
+  @media (max-width: 768px) {
+    .mobile-gradient {
+      background: linear-gradient(135deg, 
+        rgba(15, 23, 42, 0.95) 0%, 
+        rgba(30, 41, 59, 0.95) 50%, 
+        rgba(15, 23, 42, 0.95) 100%);
+    }
+  }
+  
+  /* Mobile-optimized scrolling */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Mobile-friendly text sizing */
+  @media (max-width: 640px) {
+    .mobile-text-xs { font-size: 0.7rem; }
+    .mobile-text-sm { font-size: 0.8rem; }
+    .mobile-text-base { font-size: 0.9rem; }
+  }
+}
+
 /*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {

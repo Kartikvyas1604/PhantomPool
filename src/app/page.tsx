@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header'
 import { TradingInterface } from '@/components/TradingInterface'
-import { CryptoProofsDashboard } from '@/components/CryptoProofsDashboard'
 import { ClientOnly } from '@/components/ClientOnly'
 import { ElGamalService } from '@/crypto/elgamal.service'
-
 
 interface Order {
   id: number;
@@ -17,6 +15,8 @@ interface Order {
   status: string;
   type: 'buy' | 'sell';
   timestamp: number;
+  orderHash: string;
+  solvencyProof?: string;
 }
 
 interface Trade {
@@ -25,95 +25,196 @@ interface Trade {
   amount: string;
   price: string;
   timestamp: number;
+  txSignature?: string;
+}
+
+interface MarketStats {
+  markPrice: number;
+  change24h: number;
+  volume24h: number;
+  totalValueLocked: number;
+  encryptedOrders: number;
+  activeExecutors: number;
 }
 
 export default function HomePage() {
   const [orders, setOrders] = useState<Order[]>([])
-
   const [matchedTrades] = useState<Trade[]>([])
-  const [isMatching] = useState(false)
-  const [demoStatus, setDemoStatus] = useState<string | null>(null)
+  const [isMatching, setIsMatching] = useState(false)
+  const [marketStats, setMarketStats] = useState<MarketStats>({
+    markPrice: 0,
+    change24h: 0,
+    volume24h: 0,
+    totalValueLocked: 0,
+    encryptedOrders: 0,
+    activeExecutors: 5
+  })
+  
+  const [matchingRound, setMatchingRound] = useState({
+    currentRound: 1,
+    nextRoundIn: 30,
+    lastClearingPrice: 0
+  })
 
-  const addOrder = (order: Omit<Order, 'id'>) => {
+  const addOrder = (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>) => {
     const keyPair = ElGamalService.generateKeyPair()
-    const amountBig = BigInt(Math.floor(parseFloat(order.amount.replace(' SOL', '')) * 100))
+    const amountValue = parseFloat(orderData.amount.replace(/[^\d.]/g, ''))
+    const priceValue = parseFloat(orderData.price.replace(/[^\d.]/g, ''))
+    
+    const amountBig = BigInt(Math.floor(amountValue * 1000000))
+    const priceBig = BigInt(Math.floor(priceValue * 1000000))
     
     const encryptedAmount = ElGamalService.encrypt(keyPair.pk, amountBig)
+    const encryptedPrice = ElGamalService.encrypt(keyPair.pk, priceBig)
     
-    const newOrder = { 
-      ...order, 
-      id: orders.length + 1, 
-      status: 'pending',
+    const orderHash = generateOrderHash(orderData, Date.now())
+    
+    const newOrder: Order = {
+      ...orderData,
+      id: orders.length + 1,
+      orderHash,
       timestamp: Date.now(),
-      encrypted: `ElG:${encryptedAmount.c1.x.toString(16).slice(0, 8)}...${encryptedAmount.c2.x.toString(16).slice(-4)}`
+      encrypted: `ElG:${encryptedAmount.c1.x.toString(16).slice(0, 8)}...${encryptedAmount.c2.x.toString(16).slice(-4)},${encryptedPrice.c1.x.toString(16).slice(0, 8)}...${encryptedPrice.c2.x.toString(16).slice(-4)}`,
+      solvencyProof: generateSolvencyProof(amountValue, priceValue)
     }
-    setOrders([...orders, newOrder])
-    setDemoStatus('🔒 Order encrypted with ElGamal homomorphic encryption')
-    setTimeout(() => setDemoStatus(null), 4000)
+    
+    setOrders(prev => [...prev, newOrder])
+    setMarketStats(prev => ({
+      ...prev,
+      encryptedOrders: prev.encryptedOrders + 1
+    }))
   }
+
+  const generateOrderHash = (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>, timestamp: number): string => {
+    const dataString = `${orderData.trader}-${orderData.type}-${orderData.amount}-${orderData.price}-${timestamp}`
+    return `0x${btoa(dataString).slice(0, 16)}`
+  }
+
+  const generateSolvencyProof = (amount: number, price: number): string => {
+    const requiredBalance = amount * price
+    return `BP:${Math.floor(requiredBalance).toString(16).slice(0, 8)}`
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMatchingRound(prev => ({
+        ...prev,
+        nextRoundIn: prev.nextRoundIn > 0 ? prev.nextRoundIn - 1 : 30
+      }))
+      
+      if (matchingRound.nextRoundIn === 0) {
+        setIsMatching(true)
+        setTimeout(() => {
+          setIsMatching(false)
+          setMatchingRound(prev => ({ ...prev, currentRound: prev.currentRound + 1 }))
+        }, 3000)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [matchingRound.nextRoundIn])
 
 
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
       <Header />
       
-      {/* Status Bar */}
-      {demoStatus && (
-        <div className="border-b border-slate-800 bg-emerald-950/20">
-          <div className="max-w-full mx-auto px-4 py-2">
-            <div className="flex items-center gap-2 text-emerald-400 text-sm">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span>{demoStatus}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Professional Trading Terminal Layout */}
       <div className="flex flex-col h-screen">
-        {/* Top Stats Bar */}
-        <div className="border-b border-slate-800 bg-slate-900/50 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-slate-700 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold">S</span>
+        {/* Advanced Market Data Header */}
+        <div className="border-b border-slate-800/50 bg-gradient-to-r from-slate-900/80 to-slate-800/60 backdrop-blur-sm px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-sm font-bold text-white">PP</span>
                 </div>
-                <span className="font-semibold">SOL/USDC</span>
-                <span className="text-slate-400 text-sm">Perpetual</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">SOL/USDC</span>
+                    <span className="text-xs px-2 py-1 bg-purple-900/30 text-purple-300 rounded-full">Dark Pool</span>
+                  </div>
+                  <span className="text-xs text-slate-400">Zero-Knowledge Trading</span>
+                </div>
               </div>
-              <div className="flex items-center gap-6 text-sm">
-                <div>
-                  <span className="text-slate-400">Mark: </span>
-                  <span className="text-emerald-400 font-mono">$149.50</span>
+              
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 lg:gap-8 text-sm">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-slate-400">Mark Price</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm sm:text-lg font-mono text-emerald-400">${marketStats.markPrice.toFixed(2)}</span>
+                    <span className="text-xs text-emerald-400">+{marketStats.change24h}%</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-slate-400">24h: </span>
-                  <span className="text-emerald-400">+2.34%</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-slate-400">24h Volume</span>
+                  <span className="font-mono text-slate-200 text-sm">${(marketStats.volume24h / 1000000).toFixed(2)}M</span>
                 </div>
-                <div>
-                  <span className="text-slate-400">Vol: </span>
-                  <span className="font-mono">$0</span>
+                <div className="flex flex-col min-w-0 hidden sm:flex">
+                  <span className="text-xs text-slate-400">Total Value Locked</span>
+                  <span className="font-mono text-slate-200 text-sm">${(marketStats.totalValueLocked / 1000000).toFixed(2)}M</span>
                 </div>
-                <div>
-                  <span className="text-slate-400">Orders: </span>
-                  <span className="font-mono">{orders.length}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-slate-400">Encrypted Orders</span>
+                  <span className="font-mono text-blue-400 text-sm">{marketStats.encryptedOrders}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                <span className="text-emerald-400">256-bit Encrypted</span>
+            
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className="text-emerald-400 hidden sm:inline">ElGamal Encrypted</span>
+                  <span className="text-emerald-400 sm:hidden">Encrypted</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span className="text-blue-400 hidden sm:inline">VRF Shuffled</span>
+                  <span className="text-blue-400 sm:hidden">Shuffled</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                  <span className="text-purple-400 hidden sm:inline">ZK Verified</span>
+                  <span className="text-purple-400 sm:hidden">ZK</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span className="text-blue-400">MEV Protected</span>
+              
+              <div className="flex flex-col items-start lg:items-end text-sm w-full lg:w-auto">
+                <span className="text-xs text-slate-400">Next Matching Round</span>
+                <div className="flex items-center gap-2 w-full lg:w-auto">
+                  <span className="font-mono text-orange-400">{matchingRound.nextRoundIn}s</span>
+                  <div className="flex-1 lg:flex-none w-full lg:w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-orange-400 to-red-400 transition-all duration-1000"
+                      style={{ width: `${((30 - matchingRound.nextRoundIn) / 30) * 100}%` }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Matching Status Bar */}
+        {isMatching && (
+          <div className="border-b border-amber-500/30 bg-gradient-to-r from-amber-950/40 to-orange-950/40 backdrop-blur-sm">
+            <div className="px-3 sm:px-6 py-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-amber-400">
+                <div className="flex items-center gap-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="font-medium text-sm sm:text-base">Threshold Decryption in Progress...</span>
+                </div>
+                <span className="text-xs sm:text-sm">Round #{matchingRound.currentRound} • {marketStats.activeExecutors}/5 Executors Active</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Trading Interface */}
         <div className="flex-1 overflow-hidden">
@@ -127,12 +228,7 @@ export default function HomePage() {
           </ClientOnly>
         </div>
 
-        {/* Bottom Security Status */}
-        <div className="border-t border-slate-800 bg-slate-900/30 px-4 py-2">
-          <ClientOnly>
-            <CryptoProofsDashboard />
-          </ClientOnly>
-        </div>
+
       </div>
     </div>
   )
