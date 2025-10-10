@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header'
 import { TradingInterface } from '@/components/TradingInterface'
 import { ClientOnly } from '@/components/ClientOnly'
-import { ElGamalService } from '@/crypto/elgamal.service'
+import { ElGamalRealService as ElGamalService } from '@/crypto/elgamal.enhanced.service'
 import { DarkPoolService } from '@/services/darkpool.service'
 
 interface Order {

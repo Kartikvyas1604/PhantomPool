@@ -154,7 +154,7 @@ export class BlockchainService {
         Array.from(encryptedAmount),
         Array.from(encryptedPrice),
         sideEnum,
-        Array.from(solvencyProof),
+        Buffer.from(solvencyProof),
         Array.from(orderHash)
       )
       .accounts({
