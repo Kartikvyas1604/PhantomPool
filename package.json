@@ -85,6 +85,19 @@
                 "lint": "next lint",
                 "test:anchor": "anchor test",
                 "setup:keys": "mkdir -p keypairs && solana-keygen new -o keypairs/authority.json",
-                "clean": "rm -rf dist .next target"
+                "clean": "rm -rf dist .next target",
+                "start:executor-network": "npx ts-node src/services/executor-network.service.ts",
+                "start:onchain": "npx ts-node src/server.ts",
+                "setup:crypto": "npx ts-node scripts/setup_crypto.ts",
+                "setup:executor": "npx ts-node scripts/init_executor_network.ts",
+                "deploy:enhanced": "./deploy-enhanced.sh",
+                "deploy:dev": "NETWORK=devnet ./deploy-enhanced.sh",
+                "deploy:prod": "NETWORK=mainnet-beta ./deploy-enhanced.sh",
+                "test:crypto": "npx jest src/crypto/*.test.ts",
+                "test:network": "npx jest src/services/executor-network.test.ts",
+                "test:e2e": "npx jest tests/e2e/*.test.ts",
+                "monitor:network": "npx ts-node scripts/monitor_network.ts",
+                "verify:crypto": "npx ts-node scripts/verify_crypto.ts",
+                "audit:security": "npm audit && npx audit-ci"
         }
 }

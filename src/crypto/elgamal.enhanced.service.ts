@@ -1,6 +1,9 @@
 import { randomBytes, createHash } from 'crypto';
 import { ec as EC } from 'elliptic';
 
+// Type alias for elliptic curve point to avoid type issues
+type ECPoint = ReturnType<EC['curve']['point']>;
+
 export interface Point {
   x: bigint;
   y: bigint;
@@ -76,7 +79,7 @@ export class ElGamalRealService {
   }
 
   // Convert elliptic.js point to our Point interface
-  private static ecPointToPoint(ecPoint: any): Point {
+  private static ecPointToPoint(ecPoint: ECPoint): Point {
     return {
       x: BigInt('0x' + ecPoint.getX().toString(16)),
       y: BigInt('0x' + ecPoint.getY().toString(16))
@@ -84,11 +87,11 @@ export class ElGamalRealService {
   }
 
   // Convert our Point to elliptic.js point
-  private static pointToEcPoint(point: Point): any {
+  private static pointToEcPoint(point: Point): ECPoint {
     return this.ec.curve.point(
       point.x.toString(16),
       point.y.toString(16)
-    );
+    ) as ECPoint;
   }
 
   // Secure random number generation
@@ -103,36 +106,24 @@ export class ElGamalRealService {
   }
 
   // Point operations using elliptic.js for security
-  static pointAdd(p1: Point | null, p2: Point | null): Point | null {
-    if (!p1) return p2;
-    if (!p2) return p1;
-    
+  static addPoints(p1: Point, p2: Point): Point {
     try {
-      const ec1 = this.pointToEcPoint(p1);
+      const ec1 = this.pointToEcPoint(p1) as unknown as { add: (p: unknown) => unknown };
       const ec2 = this.pointToEcPoint(p2);
       const result = ec1.add(ec2);
-      
-      if (result.isInfinity()) return null;
       return this.ecPointToPoint(result);
     } catch (error) {
-      console.error('Point addition failed:', error);
-      return null;
+      throw new Error(`Point addition failed: ${error}`);
     }
   }
 
-  static scalarMult(k: bigint, point: Point): Point | null {
-    if (k === BigInt(0)) return null;
-    if (k < BigInt(0)) throw new Error('Scalar must be positive');
-    
+  static scalarMultiply(point: Point, k: bigint): Point {
     try {
-      const ecPoint = this.pointToEcPoint(point);
+      const ecPoint = this.pointToEcPoint(point) as unknown as { mul: (k: string) => unknown };
       const result = ecPoint.mul(k.toString(16));
-      
-      if (result.isInfinity()) return null;
       return this.ecPointToPoint(result);
     } catch (error) {
-      console.error('Scalar multiplication failed:', error);
-      return null;
+      throw new Error(`Scalar multiplication failed: ${error}`);
     }
   }
 
@@ -153,18 +144,18 @@ export class ElGamalRealService {
     const r = this.generateSecureRandom();
     
     // c1 = r * G
-    const c1 = this.scalarMult(r, this.G);
+    const c1 = this.scalarMultiply(this.G, r);
     if (!c1) throw new Error('Failed to compute c1');
     
     // Encode plaintext as curve point
-    const mG = this.scalarMult(plaintext, this.G);
+    const mG = this.scalarMultiply(this.G, plaintext);
     if (!mG) throw new Error('Failed to encode plaintext');
     
     // c2 = m * G + r * pk
-    const rPk = this.scalarMult(r, publicKey);
+    const rPk = this.scalarMultiply(publicKey, r);
     if (!rPk) throw new Error('Failed to compute r * pk');
     
-    const c2 = this.pointAdd(mG, rPk);
+    const c2 = this.addPoints(mG, rPk);
     if (!c2) throw new Error('Failed to compute c2');
     
     return { c1, c2 };
@@ -173,12 +164,12 @@ export class ElGamalRealService {
   // ElGamal decryption using baby-step giant-step
   static decrypt(privateKey: bigint, ciphertext: ElGamalCiphertext): bigint {
     // Compute sk * c1
-    const skC1 = this.scalarMult(privateKey, ciphertext.c1);
+    const skC1 = this.scalarMultiply(ciphertext.c1, privateKey);
     if (!skC1) throw new Error('Failed to compute sk * c1');
     
     // Compute c2 - sk * c1 = m * G
-    const negSkC1 = { x: skC1.x, y: this.mod(-skC1.y, this.p) };
-    const mG = this.pointAdd(ciphertext.c2, negSkC1);
+    const negSkC1 = { x: skC1.x, y: this.mod(-skC1.y + this.p, this.p) };
+    const mG = this.addPoints(ciphertext.c2, negSkC1);
     if (!mG) throw new Error('Failed to recover message point');
     
     // Discrete log to recover plaintext
@@ -197,7 +188,7 @@ export class ElGamalRealService {
     for (let i = BigInt(0); i <= sqrtN; i++) {
       if (i === BigInt(0)) {
         // Handle point at infinity case
-        current = this.scalarMult(BigInt(1), this.G)!;
+        current = this.scalarMultiply(this.G, BigInt(1))!;
         const key = this.pointToString(current);
         babySteps.set(key, BigInt(0));
       } else {
@@ -205,7 +196,7 @@ export class ElGamalRealService {
         babySteps.set(key, i);
         
         if (i < sqrtN) {
-          const next = this.pointAdd(current, this.G);
+          const next = this.addPoints(current, this.G);
           if (!next) break;
           current = next;
         }
@@ -213,10 +204,10 @@ export class ElGamalRealService {
     }
     
     // Giant steps: compute target - j*sqrt(n)*G for j = 0, 1, ..., sqrt(n)
-    const giant = this.scalarMult(sqrtN, this.G);
+    const giant = this.scalarMultiply(this.G, sqrtN);
     if (!giant) throw new Error('Failed to compute giant step');
     
-    const negGiant = { x: giant.x, y: this.mod(-giant.y, this.p) };
+    const negGiant = { x: giant.x, y: this.mod(-giant.y + this.p, this.p) };
     let y = target;
     
     for (let j = BigInt(0); j <= sqrtN; j++) {
@@ -228,7 +219,7 @@ export class ElGamalRealService {
       }
       
       if (j < sqrtN) {
-        const next = this.pointAdd(y, negGiant);
+        const next = this.addPoints(y, negGiant);
         if (!next) break;
         y = next;
       }
@@ -243,8 +234,8 @@ export class ElGamalRealService {
 
   // Homomorphic operations
   static homomorphicAdd(c1: ElGamalCiphertext, c2: ElGamalCiphertext): ElGamalCiphertext {
-    const newC1 = this.pointAdd(c1.c1, c2.c1);
-    const newC2 = this.pointAdd(c1.c2, c2.c2);
+    const newC1 = this.addPoints(c1.c1, c2.c1);
+    const newC2 = this.addPoints(c1.c2, c2.c2);
     
     if (!newC1 || !newC2) {
       throw new Error('Homomorphic addition failed');
@@ -254,8 +245,8 @@ export class ElGamalRealService {
   }
 
   static scalarMultCiphertext(scalar: bigint, ciphertext: ElGamalCiphertext): ElGamalCiphertext {
-    const newC1 = this.scalarMult(scalar, ciphertext.c1);
-    const newC2 = this.scalarMult(scalar, ciphertext.c2);
+    const newC1 = this.scalarMultiply(ciphertext.c1, scalar);
+    const newC2 = this.scalarMultiply(ciphertext.c2, scalar);
     
     if (!newC1 || !newC2) {
       throw new Error('Scalar multiplication failed');
@@ -293,7 +284,7 @@ export class ElGamalRealService {
     }
     
     // Generate public key
-    const publicKey = this.scalarMult(secretKey, this.G);
+    const publicKey = this.scalarMultiply(this.G, secretKey);
     if (!publicKey) throw new Error('Failed to generate threshold public key');
     
     return { shares, threshold, publicKey };
@@ -301,7 +292,7 @@ export class ElGamalRealService {
 
   // Partial decryption for threshold scheme
   static partialDecrypt(shareValue: bigint, ciphertext: ElGamalCiphertext): Point {
-    const partial = this.scalarMult(shareValue, ciphertext.c1);
+    const partial = this.scalarMultiply(ciphertext.c1, shareValue);
     if (!partial) throw new Error('Partial decryption failed');
     return partial;
   }
@@ -334,10 +325,12 @@ export class ElGamalRealService {
       }
       
       const lagrangeCoeff = this.mod(numerator * this.modInverse(denominator, this.n), this.n);
-      const weightedPartial = this.scalarMult(lagrangeCoeff, partial);
+      const weightedPartial = this.scalarMultiply(partial, lagrangeCoeff);
       
-      if (weightedPartial) {
-        combined = this.pointAdd(combined, weightedPartial);
+      if (combined === null) {
+        combined = weightedPartial;
+      } else {
+        combined = this.addPoints(combined, weightedPartial);
       }
     }
     
@@ -345,7 +338,7 @@ export class ElGamalRealService {
     
     // Subtract from c2 to get message point
     const negCombined = { x: combined.x, y: this.mod(-combined.y, this.p) };
-    const messagePoint = this.pointAdd(ciphertext.c2, negCombined);
+    const messagePoint = this.addPoints(ciphertext.c2, negCombined);
     
     if (!messagePoint) throw new Error('Failed to recover message point');
     
