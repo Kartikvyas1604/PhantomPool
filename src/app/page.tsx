@@ -5,6 +5,7 @@ import { Header } from '@/components/Header'
 import { TradingInterface } from '@/components/TradingInterface'
 import { ClientOnly } from '@/components/ClientOnly'
 import { ElGamalService } from '@/crypto/elgamal.service'
+import { DarkPoolService } from '@/services/darkpool.service'
 
 interface Order {
   id: number;
@@ -56,33 +57,52 @@ export default function HomePage() {
     lastClearingPrice: 0
   })
 
-  const addOrder = (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>) => {
-    const keyPair = ElGamalService.generateKeyPair()
-    const amountValue = parseFloat(orderData.amount.replace(/[^\d.]/g, ''))
-    const priceValue = parseFloat(orderData.price.replace(/[^\d.]/g, ''))
-    
-    const amountBig = BigInt(Math.floor(amountValue * 1000000))
-    const priceBig = BigInt(Math.floor(priceValue * 1000000))
-    
-    const encryptedAmount = ElGamalService.encrypt(keyPair.pk, amountBig)
-    const encryptedPrice = ElGamalService.encrypt(keyPair.pk, priceBig)
-    
-    const orderHash = generateOrderHash(orderData, Date.now())
-    
-    const newOrder: Order = {
-      ...orderData,
-      id: orders.length + 1,
-      orderHash,
-      timestamp: Date.now(),
-      encrypted: `ElG:${encryptedAmount.c1.x.toString(16).slice(0, 8)}...${encryptedAmount.c2.x.toString(16).slice(-4)},${encryptedPrice.c1.x.toString(16).slice(0, 8)}...${encryptedPrice.c2.x.toString(16).slice(-4)}`,
-      solvencyProof: generateSolvencyProof(amountValue, priceValue)
+  const addOrder = async (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>) => {
+    try {
+      const darkPoolService = DarkPoolService.getInstance();
+      const result = await darkPoolService.submitOrder({
+        tokenPair: 'SOL-USDC',
+        side: orderData.type === 'buy' ? 'BUY' : 'SELL',
+        amount: orderData.amount,
+        price: orderData.price,
+        walletAddress: 'demo-wallet-address',
+        balance: '1000',
+        signature: 'demo-signature'
+      });
+
+      if (result.success) {
+        // Generate local display data for UI
+        const keyPair = ElGamalService.generateKeyPair()
+        const amountValue = parseFloat(orderData.amount.replace(/[^\d.]/g, ''))
+        const priceValue = parseFloat(orderData.price.replace(/[^\d.]/g, ''))
+        
+        const amountBig = BigInt(Math.floor(amountValue * 1000000))
+        const priceBig = BigInt(Math.floor(priceValue * 1000000))
+        
+        const encryptedAmount = ElGamalService.encrypt(keyPair.pk, amountBig)
+        const encryptedPrice = ElGamalService.encrypt(keyPair.pk, priceBig)
+        
+        const newOrder: Order = {
+          ...orderData,
+          id: orders.length + 1,
+          orderHash: result.orderId || generateOrderHash(orderData, Date.now()),
+          timestamp: Date.now(),
+          encrypted: `ElG:${encryptedAmount.c1.x.toString(16).slice(0, 8)}...${encryptedAmount.c2.x.toString(16).slice(-4)},${encryptedPrice.c1.x.toString(16).slice(0, 8)}...${encryptedPrice.c2.x.toString(16).slice(-4)}`,
+          solvencyProof: generateSolvencyProof(amountValue, priceValue),
+          status: 'pending'
+        }
+        
+        setOrders(prev => [...prev, newOrder])
+        setMarketStats(prev => ({
+          ...prev,
+          encryptedOrders: prev.encryptedOrders + 1
+        }))
+      } else {
+        console.error('Failed to submit order:', result.error);
+      }
+    } catch (error) {
+      console.error('Error submitting order:', error);
     }
-    
-    setOrders(prev => [...prev, newOrder])
-    setMarketStats(prev => ({
-      ...prev,
-      encryptedOrders: prev.encryptedOrders + 1
-    }))
   }
 
   const generateOrderHash = (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>, timestamp: number): string => {
@@ -95,24 +115,55 @@ export default function HomePage() {
     return `BP:${Math.floor(requiredBalance).toString(16).slice(0, 8)}`
   }
 
+  // Fetch live data from backend
   useEffect(() => {
-    const interval = setInterval(() => {
+    const fetchLiveData = async () => {
+      try {
+        const darkPoolService = DarkPoolService.getInstance();
+        const [matchingStatus, poolStats] = await Promise.all([
+          darkPoolService.getMatchingStatus(),
+          darkPoolService.getPoolStats()
+        ]);
+
+        const typedMatchingStatus = matchingStatus as {
+          isMatching?: boolean;
+          nextRoundIn?: number;
+          lastRound?: { clearingPrice?: number };
+        };
+        
+        setIsMatching(typedMatchingStatus.isMatching || false);
+        setMatchingRound(prev => ({
+          ...prev,
+          nextRoundIn: typedMatchingStatus.nextRoundIn || 30,
+          lastClearingPrice: typedMatchingStatus.lastRound?.clearingPrice || 0
+        }));
+        
+        setMarketStats(prev => ({
+          ...prev,
+          totalValueLocked: parseFloat(poolStats.totalVolume) || 0,
+          encryptedOrders: poolStats.totalOrders || 0,
+          activeExecutors: poolStats.activeTraders || 5
+        }));
+      } catch (error) {
+        console.log('Using mock data due to API error:', error);
+      }
+    };
+
+    fetchLiveData();
+    const dataInterval = setInterval(fetchLiveData, 5000); // Update every 5 seconds
+
+    const timerInterval = setInterval(() => {
       setMatchingRound(prev => ({
         ...prev,
         nextRoundIn: prev.nextRoundIn > 0 ? prev.nextRoundIn - 1 : 30
       }))
-      
-      if (matchingRound.nextRoundIn === 0) {
-        setIsMatching(true)
-        setTimeout(() => {
-          setIsMatching(false)
-          setMatchingRound(prev => ({ ...prev, currentRound: prev.currentRound + 1 }))
-        }, 3000)
-      }
     }, 1000)
 
-    return () => clearInterval(interval)
-  }, [matchingRound.nextRoundIn])
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(timerInterval);
+    }
+  }, [])
 
 
 

@@ -1,7 +1,16 @@
-import { PhantomPoolRealService } from './phantompool.real.service';
+import { apiClient } from './api.client';
+
+export interface Order {
+  id: string;
+  orderHash: string;
+  side: 'BUY' | 'SELL';
+  timestamp: number;
+  encryptedAmount: Record<string, unknown>;
+  encryptedPrice: Record<string, unknown>;
+}
 
 export interface OrderBookState {
-  orders: any[];
+  orders: Order[];
   totalVolume: bigint;
   lastUpdate: number;
   isMatching: boolean;
@@ -15,13 +24,23 @@ export interface PoolStats {
   privacyScore: number;
 }
 
+export interface OrderData {
+  walletAddress?: string;
+  tokenPair?: string;
+  side?: 'BUY' | 'SELL';
+  type?: string;
+  amount?: string | number;
+  price?: string | number;
+  balance?: string | number;
+  signature?: string;
+}
+
 export class DarkPoolService {
   private static instance: DarkPoolService;
-  private phantomPoolService: PhantomPoolRealService;
+  private eventListeners: Map<string, ((data?: unknown) => void)[]> = new Map();
 
   private constructor() {
-    this.phantomPoolService = PhantomPoolRealService.getInstance();
-    this.phantomPoolService.initialize().catch(console.error);
+    // Initialize service
   }
 
   static getInstance(): DarkPoolService {
@@ -31,21 +50,23 @@ export class DarkPoolService {
     return this.instance;
   }
 
-  async submitOrder(orderData: any): Promise<{ success: boolean, orderId?: string, error?: string }> {
+  async submitOrder(orderData: OrderData): Promise<{ success: boolean, orderId?: string, error?: string }> {
     try {
-      const result = await this.phantomPoolService.submitOrder({
+      const result = await apiClient.submitOrder({
         walletAddress: orderData.walletAddress || 'demo-wallet',
-        tokenPair: orderData.tokenPair || 'SOL/USDC',
-        side: orderData.side || orderData.type?.toUpperCase() || 'BUY',
-        amount: parseFloat(orderData.amount) || 0,
-        limitPrice: parseFloat(orderData.price) || 150,
+        tokenPair: orderData.tokenPair || 'SOL-USDC',
+        side: orderData.side || (orderData.type?.toUpperCase() as 'BUY' | 'SELL') || 'BUY',
+        amount: parseFloat(String(orderData.amount)) || 0,
+        limitPrice: parseFloat(String(orderData.price)) || 150,
+        balance: parseFloat(String(orderData.balance)) || 1000,
         signature: orderData.signature || 'demo-signature'
       });
 
+      const typedResult = result as { success: boolean; orderHash: string; error?: string };
       return {
-        success: result.success,
-        orderId: result.orderHash,
-        error: result.error
+        success: typedResult.success,
+        orderId: typedResult.orderHash,
+        error: typedResult.error
       };
     } catch (error) {
       return { 
@@ -55,16 +76,16 @@ export class DarkPoolService {
     }
   }
 
-  async getOrderBook(): Promise<OrderBookState> {
+  async getOrderBook(tokenPair: string = 'SOL-USDC'): Promise<OrderBookState> {
     try {
-      const state = await this.phantomPoolService.getOrderBookState();
+      const response = await apiClient.getOrderBook(tokenPair) as { orders: Order[]; totalVolume?: string };
       return {
-        orders: [],
-        totalVolume: BigInt(state.totalVolume || '0'),
-        lastUpdate: state.lastUpdate,
-        isMatching: state.isMatching
+        orders: response.orders || [],
+        totalVolume: BigInt(response.totalVolume || '0'),
+        lastUpdate: Date.now(),
+        isMatching: false
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         orders: [],
         totalVolume: BigInt(0),
@@ -74,21 +95,51 @@ export class DarkPoolService {
     }
   }
 
-  async getExecutionHistory(): Promise<any[]> {
-    return [];
+  async getMatchingStatus() {
+    try {
+      return await apiClient.getMatchingStatus();
+    } catch (_error) {
+      return {
+        isMatching: false,
+        nextRoundIn: 30,
+        lastRound: {
+          completedAt: Date.now() - 30000,
+          matchedOrders: 0,
+          clearingPrice: 0
+        }
+      };
+    }
+  }
+
+  async getExecutionHistory(): Promise<Record<string, unknown>[]> {
+    try {
+      const response = await apiClient.getMatchingHistory(20) as { rounds: Record<string, unknown>[] };
+      return response.rounds || [];
+    } catch (_error) {
+      return [];
+    }
   }
 
   async getPoolStats(): Promise<PoolStats> {
     try {
-      const stats = await this.phantomPoolService.getLivePoolStats();
+      const [volumeData, executorStats, systemStatus] = await Promise.all([
+        apiClient.getVolumeData('24h'),
+        apiClient.getExecutorStats(),
+        apiClient.getSystemStatus()
+      ]);
+
+      const typedVolumeData = volumeData as { totalTrades?: number; volume?: string };
+      const typedExecutorStats = executorStats as { executors?: unknown[] };
+      const typedSystemStatus = systemStatus as { avgResponseTime?: number };
+
       return {
-        totalOrders: stats.totalOrders,
-        totalVolume: stats.totalVolume,
-        activeTraders: stats.activeTraders,
-        avgExecutionTime: stats.avgExecutionTime,
-        privacyScore: stats.privacyScore
+        totalOrders: typedVolumeData.totalTrades || 0,
+        totalVolume: typedVolumeData.volume || '0',
+        activeTraders: typedExecutorStats.executors?.length || 0,
+        avgExecutionTime: typedSystemStatus.avgResponseTime || 0,
+        privacyScore: 0.95
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         totalOrders: 0,
         totalVolume: '0',
@@ -99,11 +150,20 @@ export class DarkPoolService {
     }
   }
 
-  on(event: string, callback: (...args: any[]) => void): void {
-    this.phantomPoolService.on(event, callback);
+  on(event: string, callback: (data?: unknown) => void): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)!.push(callback);
   }
 
-  off(event: string, callback: (...args: any[]) => void): void {
-    this.phantomPoolService.off(event, callback);
+  off(event: string, callback: (data?: unknown) => void): void {
+    if (this.eventListeners.has(event)) {
+      const listeners = this.eventListeners.get(event)!;
+      const index = listeners.indexOf(callback);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
   }
 }

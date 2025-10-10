@@ -47,6 +47,7 @@
                 "@radix-ui/react-toggle-group": "^1.1.2",
                 "@radix-ui/react-tooltip": "^1.1.8",
                 "@solana/web3.js": "^1.98.4",
+                "@types/elliptic": "^6.4.18",
                 "bn.js": "^5.2.2",
                 "class-variance-authority": "^0.7.1",
                 "clsx": "*",
@@ -73,7 +74,7 @@
         },
         "scripts": {
                 "dev": "next dev",
-                "dev:api": "ts-node src/start.ts",
+                "dev:api": "ts-node --project tsconfig.server.json src/start.ts",
                 "dev:blockchain": "solana-test-validator --reset",
                 "build": "next build",
                 "build:program": "anchor build",
