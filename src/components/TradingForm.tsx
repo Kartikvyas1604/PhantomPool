@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Shield, Lock, TrendingUp, Zap, Copy, ChevronDown, DollarSign } from 'lucide-react';
+import { PhantomWalletService } from '@/services/phantom-wallet.service';
 
 interface FormOrder {
   type: 'buy' | 'sell';
@@ -34,11 +35,15 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
       
       await new Promise(resolve => setTimeout(resolve, 2000));
 
+      // Get connected wallet address for the order
+      const walletState = PhantomWalletService.getInstance().getWalletState();
+      const walletAddress = walletState.publicKey;
+      
       onSubmitOrder({
         type: orderType,
         amount,
         price: finalPrice,
-        trader: `0x${Math.random().toString(16).substr(2, 8)}`,
+        trader: walletAddress || 'Not Connected',
         status: 'pending'
       });
 
@@ -52,8 +57,26 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   };
 
   useEffect(() => {
-    // Mock wallet balance for now - in production this would connect to actual wallet
-    setWalletBalance(Math.random() * 100 + 50);
+    // Get real wallet balance from Phantom wallet service
+    import('../services/phantom-wallet.service').then(({ PhantomWalletService }) => {
+      const walletService = PhantomWalletService.getInstance();
+      const walletState = walletService.getWalletState();
+      
+      if (walletState.isConnected) {
+        setWalletBalance(walletState.balance);
+      }
+
+      // Listen for wallet balance updates
+      const handleWalletUpdate = (state: any) => {
+        setWalletBalance(state.balance || 0);
+      };
+
+      walletService.on('connect', handleWalletUpdate);
+      
+      return () => {
+        walletService.off('connect', handleWalletUpdate);
+      };
+    });
   }, []);
 
   return (

@@ -240,15 +240,8 @@ export class SolanaRealService {
       const { blockhash } = await this.connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
 
-      // In production, this would be signed by the appropriate keypairs
-      const signature = 'mock-signature-' + Date.now();
-      
-      console.log(`✅ Trade executed: ${signature}`);
-
-      return {
-        success: true,
-        signature,
-      };
+      // In production, this would be signed by the connected wallet and executor
+      throw new Error('Transaction signing not implemented - requires wallet integration');
 
     } catch (error) {
       console.error('❌ Trade execution failed:', error);

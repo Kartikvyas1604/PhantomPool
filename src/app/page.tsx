@@ -59,15 +59,28 @@ export default function HomePage() {
 
   const addOrder = async (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>) => {
     try {
+      // Get real wallet data from Phantom wallet service
+      const { PhantomWalletService } = await import('../services/phantom-wallet.service');
+      const walletService = PhantomWalletService.getInstance();
+      const walletState = walletService.getWalletState();
+
+      if (!walletState.isConnected || !walletState.publicKey) {
+        throw new Error('Wallet not connected. Please connect your Phantom wallet first.');
+      }
+
+      // Sign the order with the real wallet
+      const orderMessage = `${orderData.type}-${orderData.amount}-${orderData.price}-${Date.now()}`;
+      const signature = await walletService.signMessage(orderMessage);
+
       const darkPoolService = DarkPoolService.getInstance();
       const result = await darkPoolService.submitOrder({
         tokenPair: 'SOL-USDC',
         side: orderData.type === 'buy' ? 'BUY' : 'SELL',
         amount: orderData.amount,
         price: orderData.price,
-        walletAddress: 'demo-wallet-address',
-        balance: '1000',
-        signature: 'demo-signature'
+        walletAddress: walletState.publicKey,
+        balance: walletState.balance.toString(),
+        signature: signature
       });
 
       if (result.success) {
@@ -99,9 +112,11 @@ export default function HomePage() {
         }))
       } else {
         console.error('Failed to submit order:', result.error);
+        alert(`Order submission failed: ${result.error}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting order:', error);
+      alert(`Error: ${error.message}`);
     }
   }
 

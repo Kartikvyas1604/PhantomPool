@@ -1,30 +1,89 @@
 'use client';
 
-import { Wallet, Activity, Settings, Zap, ChevronDown } from 'lucide-react';
+import { Wallet, Activity, Settings, Zap, ChevronDown, AlertCircle } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { useEffect, useState } from 'react';
+import { PhantomWalletService, WalletState } from '../services/phantom-wallet.service';
 
 
 export function Header() {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletState, setWalletState] = useState<WalletState>({
+    isConnected: false,
+    publicKey: null,
+    balance: 0,
+    isPhantomInstalled: false
+  });
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const walletService = PhantomWalletService.getInstance();
 
   useEffect(() => {
-    // Mock wallet connection status
-    setIsWalletConnected(false);
-    setWalletAddress(null);
+    // Check wallet state on component mount
+    const currentState = walletService.getWalletState();
+    setWalletState(currentState);
+
+    // Try to auto-connect if previously connected
+    walletService.connectIfTrusted().then((state) => {
+      if (state) {
+        setWalletState(state);
+      }
+    });
+
+    // Listen for wallet events
+    const handleWalletConnect = (state: WalletState) => {
+      setWalletState(state);
+      setError(null);
+      setIsConnecting(false);
+    };
+
+    const handleWalletDisconnect = (state: WalletState) => {
+      setWalletState(state);
+      setError(null);
+    };
+
+    walletService.on('connect', handleWalletConnect);
+    walletService.on('disconnect', handleWalletDisconnect);
+
+    return () => {
+      walletService.off('connect', handleWalletConnect);
+      walletService.off('disconnect', handleWalletDisconnect);
+    };
   }, []);
 
-  const handleConnectWallet = () => {
-    // Mock wallet connection
-    setIsWalletConnected(true);
-    setWalletAddress('7k8i...9mNx');
+  const handleConnectWallet = async () => {
+    try {
+      setIsConnecting(true);
+      setError(null);
+
+      if (!walletState.isPhantomInstalled) {
+        setError('Phantom wallet not installed');
+        walletService.installPhantom();
+        return;
+      }
+
+      const newState = await walletService.connect();
+      setWalletState(newState);
+    } catch (err: any) {
+      setError(err.message || 'Failed to connect wallet');
+      console.error('Wallet connection error:', err);
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
-  const handleDisconnectWallet = () => {
-    setIsWalletConnected(false);
-    setWalletAddress(null);
+  const handleDisconnectWallet = async () => {
+    try {
+      await walletService.disconnect();
+    } catch (err: any) {
+      setError(err.message || 'Failed to disconnect wallet');
+      console.error('Wallet disconnection error:', err);
+    }
+  };
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
   };
 
   return (
@@ -62,22 +121,44 @@ export function Header() {
             <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
 
+          {/* Error Display */}
+          {error && (
+            <div className="flex items-center gap-1 text-xs text-red-400 bg-red-950/30 px-2 py-1 rounded border border-red-800/30">
+              <AlertCircle className="w-3 h-3" />
+              <span className="hidden sm:inline">{error}</span>
+              <span className="sm:hidden">Error</span>
+            </div>
+          )}
+
           {/* Wallet Connection */}
-          {!isWalletConnected ? (
+          {!walletState.isConnected ? (
             <Button 
               onClick={handleConnectWallet}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-3 sm:px-4 py-2 h-8 sm:h-9 text-sm"
+              disabled={isConnecting}
+              className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-3 sm:px-4 py-2 h-8 sm:h-9 text-sm"
             >
               <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Connect</span>
-              <span className="sm:hidden">Wallet</span>
+              <span className="hidden sm:inline">
+                {isConnecting ? 'Connecting...' : 
+                 !walletState.isPhantomInstalled ? 'Install Phantom' : 'Connect'}
+              </span>
+              <span className="sm:hidden">
+                {isConnecting ? '...' : 'Wallet'}
+              </span>
             </Button>
           ) : (
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="bg-slate-800 rounded-lg px-2 sm:px-3 py-1 sm:py-2 border border-slate-700">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  <span className="text-xs sm:text-sm font-mono text-slate-200">{walletAddress}</span>
+                  <span className="text-xs sm:text-sm font-mono text-slate-200">
+                    {walletState.publicKey ? formatAddress(walletState.publicKey) : 'Connected'}
+                  </span>
+                  {walletState.balance > 0 && (
+                    <span className="text-xs text-slate-400 hidden md:inline">
+                      ({walletState.balance.toFixed(2)} SOL)
+                    </span>
+                  )}
                   <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
                 </div>
               </div>

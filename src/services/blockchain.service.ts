@@ -272,7 +272,7 @@ export class BlockchainService {
 
     // Executor registration not implemented in current smart contract
     console.log('Executor registration not implemented yet')
-    return 'mock-tx-id'
+    throw new Error('Executor registration not yet implemented in smart contract')
   }
 
   async getPool(tokenPair: string): Promise<OnChainPool | null> {
