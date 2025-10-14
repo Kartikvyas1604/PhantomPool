@@ -150,9 +150,9 @@ export class PhantomWalletService {
    */
   async getBalance(publicKey: string): Promise<number> {
     try {
-      // In a real implementation, you'd use Solana RPC
-      // For now, we'll use a placeholder that could be connected to your SolanaRealService
-      const response = await fetch(`https://api.mainnet-beta.solana.com`, {
+      // Use devnet for testing
+      const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+      const response = await fetch(rpcUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,6 +175,55 @@ export class PhantomWalletService {
     } catch (error) {
       console.error('Failed to get wallet balance:', error);
       return 0;
+    }
+  }
+
+  /**
+   * Request devnet SOL airdrop for testing (only works on devnet)
+   */
+  async requestDevnetAirdrop(publicKey: string, amount: number = 2): Promise<{ success: boolean; signature?: string; error?: string }> {
+    try {
+      if (process.env.SOLANA_NETWORK !== 'devnet' && process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.includes('devnet')) {
+        const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+        
+        const response = await fetch(rpcUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'requestAirdrop',
+            params: [publicKey, amount * 1000000000] // Convert SOL to lamports
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.result) {
+          return {
+            success: true,
+            signature: data.result
+          };
+        } else {
+          return {
+            success: false,
+            error: data.error?.message || 'Airdrop failed'
+          };
+        }
+      } else {
+        return {
+          success: false,
+          error: 'Airdrop only available on devnet'
+        };
+      }
+    } catch (error) {
+      console.error('Failed to request airdrop:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 

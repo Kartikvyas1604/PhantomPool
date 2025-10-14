@@ -15,6 +15,7 @@ export function Header() {
     isPhantomInstalled: false
   });
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isRequestingAirdrop, setIsRequestingAirdrop] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const walletService = PhantomWalletService.getInstance();
@@ -79,6 +80,38 @@ export function Header() {
     } catch (err: any) {
       setError(err.message || 'Failed to disconnect wallet');
       console.error('Wallet disconnection error:', err);
+    }
+  };
+
+  const handleRequestAirdrop = async () => {
+    if (!walletState.isConnected || !walletState.publicKey) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    setIsRequestingAirdrop(true);
+    setError(null);
+
+    try {
+      const walletService = PhantomWalletService.getInstance();
+      const result = await walletService.requestDevnetAirdrop(walletState.publicKey, 2);
+      
+      if (result.success) {
+        // Wait a moment for the transaction to process
+        setTimeout(async () => {
+          const newBalance = await walletService.getBalance(walletState.publicKey!);
+          setWalletState(prev => ({ ...prev, balance: newBalance }));
+        }, 3000);
+        
+        setError('✅ Airdrop successful! 2 SOL added to your devnet wallet');
+      } else {
+        setError(`Airdrop failed: ${result.error}`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to request airdrop');
+      console.error('Airdrop error:', err);
+    } finally {
+      setIsRequestingAirdrop(false);
     }
   };
 
