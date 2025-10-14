@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Shield, Lock, TrendingUp, Zap, Copy, ChevronDown, DollarSign } from 'lucide-react';
-import { SolanaService } from '../services/solana.service';
+import { SolanaProductionService } from '../services/solana-production.service';
 
 interface FormOrder {
   type: 'buy' | 'sell';
