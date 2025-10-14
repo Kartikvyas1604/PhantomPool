@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header'
 import { TradingInterface } from '@/components/TradingInterface'
-import { ClientOnly } from '@/components/ClientOnly'
+import { ClientOnly } from '../components/ClientOnly'
+import { DevnetTutorial } from '@/components/DevnetTutorial'
 import { ElGamalRealService as ElGamalService } from '@/crypto/elgamal.enhanced.service'
 import { DarkPoolService } from '@/services/darkpool.service'
 
@@ -42,6 +43,7 @@ export default function HomePage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [matchedTrades] = useState<Trade[]>([])
   const [isMatching, setIsMatching] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
   const [marketStats, setMarketStats] = useState<MarketStats>({
     markPrice: 0,
     change24h: 0,
@@ -56,6 +58,22 @@ export default function HomePage() {
     nextRoundIn: 30,
     lastClearingPrice: 0
   })
+
+  // Show tutorial on first visit for testnet (labeled as devnet)
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('phantompool-tutorial-seen');
+    const isTestnet = process.env.SOLANA_NETWORK === 'testnet' || 
+                     process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.includes('testnet');
+    
+    if (!hasSeenTutorial && isTestnet) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const handleCloseTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem('phantompool-tutorial-seen', 'true');
+  };
 
   const addOrder = async (orderData: Omit<Order, 'id' | 'orderHash' | 'encrypted' | 'timestamp'>) => {
     try {
@@ -184,7 +202,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      <Header />
+      <Header onShowTutorial={() => setShowTutorial(true)} />
       
       {/* Professional Trading Terminal Layout */}
       <div className="flex flex-col h-screen">
@@ -294,6 +312,11 @@ export default function HomePage() {
           </ClientOnly>
         </div>
 
+        {/* Devnet Tutorial */}
+        <DevnetTutorial 
+          isVisible={showTutorial}
+          onClose={handleCloseTutorial}
+        />
 
       </div>
     </div>

@@ -150,8 +150,8 @@ export class PhantomWalletService {
    */
   async getBalance(publicKey: string): Promise<number> {
     try {
-      // Use devnet for testing
-      const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+      // Use testnet for testing (shows as devnet in UI)
+      const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.testnet.solana.com';
       const response = await fetch(rpcUrl, {
         method: 'POST',
         headers: {
@@ -179,12 +179,12 @@ export class PhantomWalletService {
   }
 
   /**
-   * Request devnet SOL airdrop for testing (only works on devnet)
+   * Request testnet SOL airdrop for testing (works on testnet)
    */
-  async requestDevnetAirdrop(publicKey: string, amount: number = 2): Promise<{ success: boolean; signature?: string; error?: string }> {
+  async requestDevnetAirdrop(publicKey: string, amount: number = 1): Promise<{ success: boolean; signature?: string; error?: string }> {
     try {
-      if (process.env.SOLANA_NETWORK !== 'devnet' && process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.includes('devnet')) {
-        const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+      if (process.env.SOLANA_NETWORK === 'testnet' || process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.includes('testnet')) {
+        const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.testnet.solana.com';
         
         const response = await fetch(rpcUrl, {
           method: 'POST',
@@ -215,7 +215,7 @@ export class PhantomWalletService {
       } else {
         return {
           success: false,
-          error: 'Airdrop only available on devnet'
+          error: 'Airdrop only available on testnet'
         };
       }
     } catch (error) {

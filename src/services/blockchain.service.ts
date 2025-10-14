@@ -72,7 +72,7 @@ export class BlockchainService {
   
   private constructor() {
     this.connection = new Connection(
-      process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+      process.env.SOLANA_RPC_URL || 'https://api.testnet.solana.com',
       'confirmed'
     )
   }

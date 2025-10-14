@@ -7,7 +7,11 @@ import { useEffect, useState } from 'react';
 import { PhantomWalletService, WalletState } from '../services/phantom-wallet.service';
 
 
-export function Header() {
+interface HeaderProps {
+  onShowTutorial?: () => void;
+}
+
+export function Header({ onShowTutorial }: HeaderProps = {}) {
   const [walletState, setWalletState] = useState<WalletState>({
     isConnected: false,
     publicKey: null,
@@ -94,7 +98,7 @@ export function Header() {
 
     try {
       const walletService = PhantomWalletService.getInstance();
-      const result = await walletService.requestDevnetAirdrop(walletState.publicKey, 2);
+      const result = await walletService.requestDevnetAirdrop(walletState.publicKey, 1);
       
       if (result.success) {
         // Wait a moment for the transaction to process
@@ -103,7 +107,7 @@ export function Header() {
           setWalletState(prev => ({ ...prev, balance: newBalance }));
         }, 3000);
         
-        setError('✅ Airdrop successful! 2 SOL added to your devnet wallet');
+        setError('✅ Airdrop successful! 1 SOL added to your testnet wallet');
       } else {
         setError(`Airdrop failed: ${result.error}`);
       }
@@ -148,6 +152,19 @@ export function Header() {
             <span className="text-slate-500">•</span>
             <span className="text-slate-400">TPS: 3,247</span>
           </div>
+
+          {/* Help Tutorial Button (Testnet - shows as devnet) */}
+          {(process.env.SOLANA_NETWORK === 'testnet' || process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.includes('testnet')) && onShowTutorial && (
+            <Button 
+              onClick={onShowTutorial}
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-blue-400 hover:text-blue-300"
+              title="Show Tutorial"
+            >
+              <span className="text-sm font-bold">?</span>
+            </Button>
+          )}
 
           {/* Settings */}
           <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-slate-400 hover:text-slate-200">
@@ -195,6 +212,24 @@ export function Header() {
                   <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
                 </div>
               </div>
+              
+              {/* Testnet Airdrop Button (shows as devnet) */}
+              {(process.env.SOLANA_NETWORK === 'testnet' || process.env.NEXT_PUBLIC_SOLANA_RPC_URL?.includes('testnet')) && (
+                <Button 
+                  onClick={handleRequestAirdrop}
+                  disabled={isRequestingAirdrop}
+                  variant="outline"
+                  size="sm"
+                  className="bg-blue-900/30 border-blue-600/30 text-blue-400 hover:bg-blue-800/30 disabled:opacity-50 text-xs px-2 sm:px-3"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline">
+                    {isRequestingAirdrop ? 'Getting SOL...' : 'Get SOL'}
+                  </span>
+                  <span className="sm:hidden">SOL</span>
+                </Button>
+              )}
+
               <Button 
                 onClick={handleDisconnectWallet}
                 variant="ghost" 

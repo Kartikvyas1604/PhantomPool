@@ -74,7 +74,7 @@ export class SolanaRealService {
     commitment: 'processed' | 'confirmed' | 'finalized' = 'confirmed'
   ) {
     this.connection = new Connection(
-      rpcUrl || process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
+      rpcUrl || process.env.SOLANA_RPC_URL || 'https://api.testnet.solana.com',
       commitment
     );
   }
