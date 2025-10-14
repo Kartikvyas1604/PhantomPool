@@ -1,6 +1,6 @@
 // Real-time monitoring service for production PhantomPool
 import { EventEmitter } from 'events';
-import { SolanaProductionService } from './solana-production.service';
+import { SolanaRealService } from './solana-production.service';
 import { JupiterApiService } from './jupiter-api.service';
 
 export interface SystemHealth {
@@ -49,7 +49,7 @@ export interface SecurityAlert {
 }
 
 export class ProductionMonitoringService extends EventEmitter {
-  private solanaService: SolanaProductionService;
+  private solanaService: SolanaRealService;
   private jupiterService: JupiterApiService;
   private healthCheckInterval: NodeJS.Timeout | null = null;
   private metricsInterval: NodeJS.Timeout | null = null;
@@ -64,7 +64,7 @@ export class ProductionMonitoringService extends EventEmitter {
 
   constructor() {
     super();
-    this.solanaService = new SolanaProductionService();
+    this.solanaService = new SolanaRealService();
     this.jupiterService = new JupiterApiService();
   }
 

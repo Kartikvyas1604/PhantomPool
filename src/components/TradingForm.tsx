@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Shield, Lock, TrendingUp, Zap, Copy, ChevronDown, DollarSign } from 'lucide-react';
-import { SolanaProductionService } from '../services/solana-production.service';
 
 interface FormOrder {
   type: 'buy' | 'sell';
@@ -53,9 +52,8 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   };
 
   useEffect(() => {
-    const solanaService = SolanaService.getInstance();
-    const walletState = solanaService.getWalletState();
-    setWalletBalance(walletState.balance || 0);
+    // Mock wallet balance for now - in production this would connect to actual wallet
+    setWalletBalance(Math.random() * 100 + 50);
   }, []);
 
   return (
