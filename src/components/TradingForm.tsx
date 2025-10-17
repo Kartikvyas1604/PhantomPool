@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Shield, Lock, TrendingUp, Zap, Copy, ChevronDown, DollarSign } from 'lucide-react';
-import { PhantomWalletService } from '@/services/phantom-wallet.service';
+import { PhantomWalletService } from '../services/phantom-wallet.service';
 
 interface FormOrder {
   type: 'buy' | 'sell';
@@ -58,25 +58,23 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
 
   useEffect(() => {
     // Get real wallet balance from Phantom wallet service
-    import('../services/phantom-wallet.service').then(({ PhantomWalletService }) => {
-      const walletService = PhantomWalletService.getInstance();
-      const walletState = walletService.getWalletState();
-      
-      if (walletState.isConnected) {
-        setWalletBalance(walletState.balance);
-      }
+    const walletService = PhantomWalletService.getInstance();
+    const walletState = walletService.getWalletState();
+    
+    if (walletState.isConnected) {
+      setWalletBalance(walletState.balance);
+    }
 
-      // Listen for wallet balance updates
-      const handleWalletUpdate = (state: any) => {
-        setWalletBalance(state.balance || 0);
-      };
+    // Listen for wallet balance updates
+    const handleWalletUpdate = (state: any) => {
+      setWalletBalance(state.balance || 0);
+    };
 
-      walletService.on('connect', handleWalletUpdate);
-      
-      return () => {
-        walletService.off('connect', handleWalletUpdate);
-      };
-    });
+    walletService.on('connect', handleWalletUpdate);
+    
+    return () => {
+      walletService.off('connect', handleWalletUpdate);
+    };
   }, []);
 
   return (
