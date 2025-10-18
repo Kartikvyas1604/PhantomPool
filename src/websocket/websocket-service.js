@@ -513,7 +513,11 @@ class PhantomPoolWebSocketService {
       active_channels: this.channels.size,
       messages_received: this.metrics.messagesReceived,
       messages_sent: this.metrics.messagesSent,
-      auth_failures: this.metrics.authFailures
+      auth_failures: this.metrics.authFailures,
+      uptime: Math.floor((Date.now() - this.startTime) / 1000),
+      channels: Object.fromEntries(
+        Array.from(this.channels.entries()).map(([channel, clients]) => [channel, clients.size])
+      )
     };
   }
 }
