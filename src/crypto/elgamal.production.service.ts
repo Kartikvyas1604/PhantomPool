@@ -3,7 +3,8 @@
 
 import { ec as EC } from 'elliptic';
 import { randomBytes } from 'crypto';
-import BN from 'bn.js';
+const BN = require('bn.js');
+type BNInstance = InstanceType<typeof BN>;
 
 interface ECPoint {
   x: string;
@@ -16,21 +17,21 @@ interface ElGamalCiphertext {
 }
 
 interface ElGamalKeyPair {
-  privateKey: BN;
+  privateKey: BNInstance;
   publicKey: ECPoint;
 }
 
 interface ThresholdShares {
   threshold: number;
   total: number;
-  shares: Array<{ id: number; share: BN }>;
+  shares: Array<{ id: number; share: BNInstance }>;
   publicKey: ECPoint;
 }
 
 export class ElGamalProductionService {
   private curve: EC;
   private G: any; // Generator point
-  private n: BN; // Curve order
+  private n: BNInstance; // Curve order
 
   constructor() {
     this.curve = new EC('secp256k1');
@@ -57,7 +58,7 @@ export class ElGamalProductionService {
   /**
    * Encrypt a value using ElGamal - CORE ENCRYPTION
    */
-  encrypt(value: BN, publicKey: ECPoint): ElGamalCiphertext {
+  encrypt(value: BNInstance, publicKey: ECPoint): ElGamalCiphertext {
     const r = this.randomScalar();
     const pkPoint = this.curve.keyFromPublic({
       x: publicKey.x,
@@ -127,7 +128,7 @@ export class ElGamalProductionService {
   /**
    * Decrypt with private key
    */
-  decrypt(ciphertext: ElGamalCiphertext, privateKey: BN): BN {
+  decrypt(ciphertext: ElGamalCiphertext, privateKey: BNInstance): BNInstance {
     const C1 = this.curve.keyFromPublic({
       x: ciphertext.C1.x,
       y: ciphertext.C1.y,
@@ -165,15 +166,15 @@ export class ElGamalProductionService {
   /**
    * Generate secret shares for threshold scheme (3-of-5)
    */
-  generateSecretShares(privateKey: BN, threshold: number, totalShares: number): ThresholdShares {
-    const coefficients: BN[] = [privateKey];
+  generateSecretShares(privateKey: BNInstance, threshold: number, totalShares: number): ThresholdShares {
+    const coefficients: BNInstance[] = [privateKey];
     
     // Generate random coefficients
     for (let i = 1; i < threshold; i++) {
       coefficients.push(this.randomScalar());
     }
 
-    const shares: Array<{ id: number; share: BN }> = [];
+    const shares: Array<{ id: number; share: BNInstance }> = [];
 
     // Generate shares using polynomial evaluation
     for (let x = 1; x <= totalShares; x++) {
@@ -207,7 +208,7 @@ export class ElGamalProductionService {
   /**
    * Partial decryption for threshold scheme
    */
-  partialDecrypt(shareValue: BN, ciphertext: ElGamalCiphertext): ECPoint {
+  partialDecrypt(shareValue: BNInstance, ciphertext: ElGamalCiphertext): ECPoint {
     const C1 = this.curve.keyFromPublic({
       x: ciphertext.C1.x,
       y: ciphertext.C1.y,
@@ -228,7 +229,7 @@ export class ElGamalProductionService {
     partialDecryptions: Array<{ id: number; partial: ECPoint }>,
     ciphertext: ElGamalCiphertext,
     threshold: number
-  ): BN {
+  ): BNInstance {
     if (partialDecryptions.length < threshold) {
       throw new Error(`Need at least ${threshold} shares, got ${partialDecryptions.length}`);
     }
@@ -292,7 +293,7 @@ export class ElGamalProductionService {
 
   // === HELPER METHODS ===
 
-  private discreteLog(point: any): BN {
+  private discreteLog(point: any): BNInstance {
     // Baby-step Giant-step for discrete log (simplified for demo)
     const limit = 10000000; // 10M max
     
@@ -307,7 +308,7 @@ export class ElGamalProductionService {
     return new BN(Math.floor(5 + Math.random() * 15));
   }
 
-  private randomScalar(): BN {
+  private randomScalar(): BNInstance {
     const bytes = randomBytes(32);
     const hex = bytes.toString('hex');
     return new BN(hex, 16).mod(this.n);
