@@ -21,7 +21,7 @@ export const proofsRoutes = (services: ProofsServices = {}) => {
   const router = Router();
 
   // All proof routes require authentication
-  router.use(authMiddleware);
+  router.use(authMiddleware as any);
 
   /**
    * POST /api/proofs/bulletproof/generate

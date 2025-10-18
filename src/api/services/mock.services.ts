@@ -196,7 +196,7 @@ export class MockMatchingEngineService implements MatchingEngineService {
       amount: tradeRequest.amount,
       price: tradeRequest.price,
       timestamp: new Date(),
-      status: 'pending',
+      status: 'pending' as const,
       zkProof: tradeRequest.zkMatchProof,
     };
   }

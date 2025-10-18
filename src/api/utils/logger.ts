@@ -171,15 +171,12 @@ class Logger {
     }
   }
 
-  // Audit logging for compliance
-  audit(action: string, userId?: string, metadata?: any): void {
-    this.info(`Audit: ${action}`, {
-      type: 'audit',
-      action,
-      userId,
-      timestamp: new Date().toISOString(),
-      ...metadata,
-    });
+  /**
+   * Audit logging for security and compliance
+   */
+  audit(message: string, metadata?: any): void {
+    const logEntry = this.formatMessage('AUDIT', message, metadata);
+    this.output(logEntry);
   }
 }
 

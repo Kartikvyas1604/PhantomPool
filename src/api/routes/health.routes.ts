@@ -124,7 +124,7 @@ export const healthRoutes = (services: HealthServices = {}) => {
    * System performance metrics
    */
   router.get('/metrics', asyncHandler(async (req: Request, res: Response) => {
-    const metrics = {
+    const metrics: any = {
       process: {
         uptime: Math.floor(process.uptime()),
         memory: process.memoryUsage(),

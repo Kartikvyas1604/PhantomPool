@@ -20,7 +20,7 @@ export const tradingRoutes = (services: TradingServices = {}) => {
   const router = Router();
 
   // All trading routes require authentication
-  router.use(authMiddleware);
+  router.use(authMiddleware as any);
 
   /**
    * GET /api/trading/orderbook/:token
