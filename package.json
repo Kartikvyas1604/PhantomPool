@@ -99,6 +99,8 @@
                 "dev:api-simple": "ts-node src/api-simple-launcher.ts",
                 "dev:api-direct": "ts-node src/api-server-direct.ts",
                 "dev:api-js": "node src/api-server.js",
+                "dev:api-enhanced": "node src/api-server-enhanced.js",
+                "test:websocket": "node src/websocket/test-websocket.js",
                 "dev:blockchain": "solana-test-validator --reset",
                 "build": "next build",
                 "build:program": "anchor build",

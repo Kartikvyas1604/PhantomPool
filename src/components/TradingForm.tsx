@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Shield, Lock, TrendingUp, Zap, Copy, ChevronDown, DollarSign } from 'lucide-react';
+import { useTrading } from '../contexts/TradingContext';
 import { PhantomWalletService } from '../services/phantom-wallet.service';
 
 interface FormOrder {
@@ -23,22 +24,37 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
   const [orderMode, setOrderMode] = useState<'limit' | 'market'>('limit');
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  
+  // Use trading context for real-time integration
+  const { 
+    submitOrder, 
+    isSubmittingOrder,
+    orderError,
+    isConnected,
+    isAuthenticated 
+  } = useTrading();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    try {
-      const finalPrice = orderMode === 'market' ? '0' : price;
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    const finalPrice = orderMode === 'market' ? '0' : price;
+    
+    // Get connected wallet address for the order
+    const walletState = PhantomWalletService.getInstance().getWalletState();
+    const walletAddress = walletState.publicKey;
 
-      // Get connected wallet address for the order
-      const walletState = PhantomWalletService.getInstance().getWalletState();
-      const walletAddress = walletState.publicKey;
-      
+    // Submit through trading context (handles real-time updates)
+    const success = await submitOrder({
+      type: orderType,
+      token: 'SOL',
+      amount,
+      price: finalPrice,
+      trader: walletAddress || 'Not Connected'
+    });
+
+    if (success) {
+      // Also call the legacy prop for backward compatibility
       onSubmitOrder({
         type: orderType,
         amount,
@@ -47,12 +63,9 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
         status: 'pending'
       });
 
+      // Clear form on success
       setAmount('');
       setPrice('');
-    } catch (error) {
-      console.error('Order submission failed:', error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -92,8 +105,27 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
             <div>
               <h3 className="text-xs sm:text-sm md:text-base font-bold text-white">Order Entry</h3>
               <div className="flex items-center gap-1 sm:gap-2 mt-0.5">
-                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-[#00ff88] rounded-full animate-pulse"></div>
-                <span className="text-[#00ff88] text-xs font-medium">🔒 MEV Protected</span>
+                <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${
+                  isConnected && isAuthenticated 
+                    ? 'bg-[#00ff88] animate-pulse' 
+                    : isConnected 
+                      ? 'bg-yellow-400 animate-pulse' 
+                      : 'bg-red-400 animate-pulse'
+                }`}></div>
+                <span className={`text-xs font-medium ${
+                  isConnected && isAuthenticated 
+                    ? 'text-[#00ff88]' 
+                    : isConnected 
+                      ? 'text-yellow-400' 
+                      : 'text-red-400'
+                }`}>
+                  {isConnected && isAuthenticated 
+                    ? '🔒 MEV Protected' 
+                    : isConnected 
+                      ? '🔐 Authenticating...' 
+                      : '❌ Disconnected'
+                  }
+                </span>
               </div>
             </div>
           </div>
@@ -269,18 +301,28 @@ export function TradingForm({ onSubmitOrder }: TradingFormProps) {
           <div className="pt-2">
             <Button 
               type="submit" 
-              disabled={isSubmitting || !amount || (orderMode === 'limit' && !price)}
+              disabled={isSubmittingOrder || !amount || (orderMode === 'limit' && !price) || !isConnected || !isAuthenticated}
               className={`w-full py-3 sm:py-4 md:py-5 text-xs sm:text-sm md:text-lg font-bold transition-all duration-300 rounded-lg relative overflow-hidden ${
                 orderType === 'buy' 
                   ? 'bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black shadow-lg shadow-[#00f0ff]/50' 
                   : 'bg-[#ff00e5] hover:bg-[#ff00e5]/80 text-black shadow-lg shadow-[#ff00e5]/50'
               } disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] group`}
             >
-              {isSubmitting ? (
+              {isSubmittingOrder ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                   <span className="hidden xs:inline">Encrypting Order...</span>
                   <span className="xs:hidden">Encrypting...</span>
+                </div>
+              ) : !isConnected ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                  <span>Connecting...</span>
+                </div>
+              ) : !isAuthenticated ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Lock className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                  <span>Authenticating...</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">

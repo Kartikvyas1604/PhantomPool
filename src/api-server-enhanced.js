@@ -1,6 +1,6 @@
 /**
- * PhantomPool API Server
- * Simple Express.js server with all API endpoints
+ * Enhanced PhantomPool API Server with WebSocket Integration
+ * Complete Express.js server with real-time WebSocket services
  */
 
 const express = require('express');
@@ -9,11 +9,12 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-const { WebSocketServer } = require('ws');
+const { PhantomPoolWebSocketService } = require('./websocket/websocket-service');
 
 // Mock data for demonstration
 const mockOrders = [];
 const mockTrades = [];
+let wsService = null;
 
 const app = express();
 const PORT = parseInt(process.env.API_PORT || '8080');
@@ -34,35 +35,60 @@ app.use((req, res, next) => {
 
 // Health endpoints
 app.get('/api/health', (req, res) => {
+  const wsMetrics = wsService ? wsService.getMetrics() : {};
+  
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
     uptime: Math.floor(process.uptime()),
+    websocket: wsMetrics
   });
 });
 
 app.get('/api/health/detailed', (req, res) => {
+  const wsStatus = wsService ? wsService.getStatus() : {};
+  
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     checks: {
-      api: { status: 'healthy', uptime: Math.floor(process.uptime()) },
+      api: { 
+        status: 'healthy', 
+        uptime: Math.floor(process.uptime()),
+        orders: mockOrders.length,
+        trades: mockTrades.length
+      },
+      websocket: {
+        status: 'healthy',
+        ...wsStatus
+      },
       database: { status: 'unknown', message: 'Mock implementation' },
       matching_engine: { status: 'healthy', active_orders: mockOrders.length },
     },
   });
 });
 
-// Orders endpoints
+// Orders endpoints with WebSocket integration
 app.post('/api/orders', (req, res) => {
   const order = {
     id: `order_${Date.now()}`,
+    userId: req.headers['user-id'] || 'anonymous',
     ...req.body,
     status: 'pending',
     createdAt: new Date().toISOString(),
   };
   mockOrders.push(order);
+  
+  // Broadcast order update via WebSocket
+  if (wsService) {
+    wsService.broadcastOrderUpdate(order.id, 'pending', {
+      userId: order.userId,
+      type: order.type,
+      token: order.token,
+      amount: order.amount
+    });
+  }
   
   res.status(201).json({
     success: true,
@@ -91,6 +117,36 @@ app.get('/api/orders', (req, res) => {
   });
 });
 
+app.put('/api/orders/:orderId/status', (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+  
+  const order = mockOrders.find(o => o.id === orderId);
+  if (!order) {
+    return res.status(404).json({
+      success: false,
+      error: 'Order not found'
+    });
+  }
+  
+  order.status = status;
+  order.updatedAt = new Date().toISOString();
+  
+  // Broadcast order update via WebSocket
+  if (wsService) {
+    wsService.broadcastOrderUpdate(orderId, status, {
+      userId: order.userId,
+      updatedAt: order.updatedAt
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: order,
+    message: 'Order status updated'
+  });
+});
+
 app.get('/api/orders/stats', (req, res) => {
   res.json({
     success: true,
@@ -103,29 +159,50 @@ app.get('/api/orders/stats', (req, res) => {
   });
 });
 
-// Trading endpoints
+// Trading endpoints with WebSocket integration
 app.get('/api/trading/orderbook/:token', (req, res) => {
   const { token } = req.params;
+  const orderbook = {
+    token,
+    bids: mockOrders.filter(o => o.type === 'buy' && o.token === token && o.status === 'pending')
+                    .map(o => ({ price: o.price, amount: o.amount }))
+                    .sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+                    .slice(0, 10),
+    asks: mockOrders.filter(o => o.type === 'sell' && o.token === token && o.status === 'pending')
+                    .map(o => ({ price: o.price, amount: o.amount }))
+                    .sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+                    .slice(0, 10),
+    spread: '0.01',
+    lastUpdate: new Date().toISOString(),
+  };
+  
   res.json({
     success: true,
-    data: {
-      token,
-      bids: [],
-      asks: [],
-      spread: '0.01',
-      lastUpdate: new Date().toISOString(),
-    },
+    data: orderbook,
   });
 });
 
 app.post('/api/trading/match', (req, res) => {
   const trade = {
     id: `trade_${Date.now()}`,
+    userId: req.headers['user-id'] || 'anonymous',
     ...req.body,
     timestamp: new Date().toISOString(),
     status: 'pending',
   };
   mockTrades.push(trade);
+  
+  // Broadcast trade execution via WebSocket
+  if (wsService) {
+    wsService.broadcastTradeExecution(trade.id, {
+      userId: trade.userId,
+      orderId: trade.orderId,
+      counterOrderId: trade.counterOrderId,
+      amount: trade.amount,
+      price: trade.price,
+      status: 'pending'
+    });
+  }
   
   res.status(201).json({
     success: true,
@@ -146,6 +223,86 @@ app.get('/api/trading/trades', (req, res) => {
         totalPages: 1,
       },
     },
+  });
+});
+
+// WebSocket management endpoints
+app.get('/api/websocket/status', (req, res) => {
+  if (!wsService) {
+    return res.status(503).json({
+      success: false,
+      error: 'WebSocket service not available'
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: wsService.getStatus()
+  });
+});
+
+app.get('/api/websocket/metrics', (req, res) => {
+  if (!wsService) {
+    return res.status(503).json({
+      success: false,
+      error: 'WebSocket service not available'
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: wsService.getMetrics()
+  });
+});
+
+app.post('/api/websocket/broadcast', (req, res) => {
+  if (!wsService) {
+    return res.status(503).json({
+      success: false,
+      error: 'WebSocket service not available'
+    });
+  }
+  
+  const { channel, message } = req.body;
+  if (!channel || !message) {
+    return res.status(400).json({
+      success: false,
+      error: 'Channel and message are required'
+    });
+  }
+  
+  wsService.broadcastToChannel(channel, {
+    type: 'admin_broadcast',
+    ...message,
+    timestamp: new Date().toISOString()
+  });
+  
+  res.json({
+    success: true,
+    message: 'Broadcast sent successfully'
+  });
+});
+
+// Simulate market data updates
+app.post('/api/trading/simulate-orderbook-update/:token', (req, res) => {
+  const { token } = req.params;
+  
+  if (wsService) {
+    wsService.broadcastOrderBookUpdate(token, {
+      bids: [
+        { price: '49.95', amount: '100.0' },
+        { price: '49.90', amount: '200.0' }
+      ],
+      asks: [
+        { price: '50.05', amount: '150.0' },
+        { price: '50.10', amount: '180.0' }
+      ]
+    });
+  }
+  
+  res.json({
+    success: true,
+    message: `Orderbook update broadcasted for ${token}`
   });
 });
 
@@ -174,8 +331,10 @@ app.post('/api/proofs/bulletproof/verify', (req, res) => {
   });
 });
 
-// Admin endpoints (simplified)
+// Admin endpoints
 app.get('/api/admin/dashboard', (req, res) => {
+  const wsStatus = wsService ? wsService.getStatus() : {};
+  
   res.json({
     success: true,
     data: {
@@ -188,7 +347,9 @@ app.get('/api/admin/dashboard', (req, res) => {
         totalOrders: mockOrders.length,
         totalTrades: mockTrades.length,
         activeOrders: mockOrders.filter(o => o.status === 'pending').length,
+        websocketConnections: wsStatus.connected_clients || 0
       },
+      websocket: wsStatus
     },
   });
 });
@@ -198,26 +359,32 @@ app.get('/api/docs', (req, res) => {
   res.json({
     name: 'PhantomPool API',
     version: '1.0.0',
-    description: 'Dark pool trading API with privacy-preserving cryptography',
+    description: 'Dark pool trading API with privacy-preserving cryptography and real-time WebSocket updates',
     endpoints: {
       health: '/api/health',
       orders: '/api/orders',
       trading: '/api/trading',
       proofs: '/api/proofs',
       admin: '/api/admin',
+      websocket: '/api/websocket'
     },
-    websocket: '/ws',
+    websocket: {
+      endpoint: '/ws',
+      authentication: 'Required via auth message with bearer token',
+      channels: ['orders', 'trades', 'orderbook', 'system', 'portfolio']
+    }
   });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'PhantomPool API Server',
+    message: 'PhantomPool API Server with WebSocket',
     version: '1.0.0',
     status: 'operational',
     documentation: '/api/docs',
     healthCheck: '/api/health',
+    websocket: '/ws',
     timestamp: new Date().toISOString(),
   });
 });
@@ -245,47 +412,31 @@ app.use((error, req, res, next) => {
 // Start HTTP server
 const server = http.createServer(app);
 
-// Setup WebSocket
-const wss = new WebSocketServer({ server, path: '/ws' });
-
-wss.on('connection', (ws, req) => {
-  console.log(`[${new Date().toISOString()}] WebSocket connection established`);
-  
-  ws.send(JSON.stringify({
-    type: 'welcome',
-    message: 'Connected to PhantomPool WebSocket',
-    timestamp: new Date().toISOString(),
-  }));
-
-  ws.on('message', (data) => {
-    try {
-      const message = JSON.parse(data.toString());
-      console.log('WebSocket message received:', message);
-      
-      ws.send(JSON.stringify({
-        type: 'echo',
-        data: message,
-        timestamp: new Date().toISOString(),
-      }));
-    } catch (error) {
-      console.error('WebSocket message error:', error);
-    }
-  });
-
-  ws.on('close', () => {
-    console.log(`[${new Date().toISOString()}] WebSocket connection closed`);
-  });
+// Initialize WebSocket service
+wsService = new PhantomPoolWebSocketService(server, {
+  path: '/ws',
+  maxConnections: 1000,
+  heartbeatInterval: 30000,
+  authTimeout: 10000
 });
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`🚀 PhantomPool API Server started successfully`);
+  console.log(`🚀 PhantomPool API Server with WebSocket started successfully`);
   console.log(`📡 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`);
   console.log(`🔒 WebSocket endpoint: ws://localhost:${PORT}/ws`);
+  console.log(`📈 WebSocket status: http://localhost:${PORT}/api/websocket/status`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Process ID: ${process.pid}`);
+  
+  console.log('\n📺 Available WebSocket channels:');
+  console.log('  - orders: Real-time order updates');
+  console.log('  - trades: Live trade executions');
+  console.log('  - orderbook: Order book changes');
+  console.log('  - system: System status updates');
+  console.log('  - portfolio: Portfolio changes');
 });
 
 // Graceful shutdown
@@ -299,4 +450,4 @@ process.on('SIGINT', () => {
   server.close(() => process.exit(0));
 });
 
-module.exports = { app, server };
+module.exports = { app, server, wsService };
