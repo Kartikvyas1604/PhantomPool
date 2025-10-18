@@ -67,14 +67,14 @@
                 "class-variance-authority": "^0.7.1",
                 "clsx": "*",
                 "cmdk": "^1.1.1",
-                "compression": "^1.7.5",
+                "compression": "^1.8.1",
                 "cors": "^2.8.5",
                 "elliptic": "^6.6.1",
                 "embla-carousel-react": "^8.6.0",
                 "express": "^5.1.0",
-                "express-rate-limit": "^7.4.1",
+                "express-rate-limit": "^7.5.1",
                 "fastify": "^5.6.1",
-                "helmet": "^8.0.0",
+                "helmet": "^8.1.0",
                 "input-otp": "^1.4.2",
                 "jsonwebtoken": "^9.0.2",
                 "lucide-react": "^0.487.0",
@@ -92,7 +92,8 @@
                 "tailwind-merge": "*",
                 "ts-node": "^10.9.2",
                 "vaul": "^1.1.2",
-                "ws": "^8.18.3"
+                "ws": "^8.18.3",
+                "xss": "^1.0.15"
         },
         "scripts": {
                 "dev": "next dev",

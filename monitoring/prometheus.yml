@@ -1,0 +1,69 @@
+# PhantomPool Prometheus Configuration
+# Monitoring and alerting configuration for production deployment
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'phantompool-monitor'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # PhantomPool Application
+  - job_name: 'phantompool-app'
+    static_configs:
+      - targets: ['phantompool-app:3001']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+    
+  # Node Exporter (if installed)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    
+  # PostgreSQL Exporter (if installed)
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    
+  # Redis Exporter (if installed)
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    
+  # Nginx Exporter (if installed)
+  - job_name: 'nginx-exporter'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+    
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+
+# Remote write configuration (optional - for long-term storage)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint"
+#     basic_auth:
+#       username: "user"
+#       password: "password"
