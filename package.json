@@ -97,6 +97,8 @@
                 "dev": "next dev",
                 "dev:api": "ts-node --project tsconfig.server.json src/start.ts",
                 "dev:api-simple": "ts-node src/api-simple-launcher.ts",
+                "dev:api-direct": "ts-node src/api-server-direct.ts",
+                "dev:api-js": "node src/api-server.js",
                 "dev:blockchain": "solana-test-validator --reset",
                 "build": "next build",
                 "build:program": "anchor build",

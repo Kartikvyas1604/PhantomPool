@@ -3,9 +3,9 @@
  * Quick start version of the API server
  */
 
-import { PhantomPoolAPIServer } from './api/server-simple';
-import { mockServices } from './api/services/mock.services';
-import { logger } from './api/utils/logger';
+import { PhantomPoolAPIServer } from './api/server-simple.js';
+import { mockServices } from './api/services/mock.services.js';
+import { logger } from './api/utils/logger.js';
 
 const PORT = parseInt(process.env.API_PORT || '8080');
 
