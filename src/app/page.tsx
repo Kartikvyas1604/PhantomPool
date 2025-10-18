@@ -5,6 +5,7 @@ import { Header } from '@/components/Header'
 import { TradingInterface } from '@/components/TradingInterface'
 import { ClientOnly } from '../components/ClientOnly'
 import { DevnetTutorial } from '@/components/DevnetTutorial'
+import { TradingProvider } from '../contexts/TradingContext'
 
 // Updated interfaces to match hackathon API
 interface Order {
@@ -355,8 +356,13 @@ export default function HomePage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      <Header onShowTutorial={() => setShowTutorial(true)} />
+    <TradingProvider
+      userId={`user_${Date.now()}`}
+      apiBaseUrl="http://localhost:8080/api"
+      wsUrl="ws://localhost:8080/ws"
+    >
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+        <Header onShowTutorial={() => setShowTutorial(true)} />
       
       {/* Professional Trading Terminal Layout */}
       <div className="flex flex-col h-screen">
@@ -472,7 +478,8 @@ export default function HomePage() {
           onClose={handleCloseTutorial}
         />
 
+        </div>
       </div>
-    </div>
+    </TradingProvider>
   )
 }

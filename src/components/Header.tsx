@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { useEffect, useState } from 'react';
 import { PhantomWalletService, WalletState } from '../services/phantom-wallet.service';
+import { RealTimeNotifications } from './RealTimeNotifications';
 
 
 interface HeaderProps {
@@ -165,6 +166,9 @@ export function Header({ onShowTutorial }: HeaderProps = {}) {
               <span className="text-sm font-bold">?</span>
             </Button>
           )}
+
+          {/* Real-time Notifications */}
+          <RealTimeNotifications />
 
           {/* Settings */}
           <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-slate-400 hover:text-slate-200">
