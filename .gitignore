@@ -76,3 +76,9 @@ rocksdb/
 
 # Redis dump
 dump.rdb
+
+# Prompt and documentation files to hide
+prompt.txt
+PROMPT.txt
+*.prompt
+prompts/
