@@ -3,8 +3,8 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "es6",
-      "es2017"
+      "ES2020",
+      "ES2020.BigInt"
     ],
     "types": ["node"],
     "allowJs": true,
@@ -35,7 +35,7 @@
         "./src/app/*"
       ]
     },
-    "target": "ES2017"
+    "target": "ES2020"
   },
   "include": [
     "next-env.d.ts",
