@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Slider } from "@/components/ui/slider";
 import { 
   Lock, 
   Zap, 
@@ -212,13 +211,14 @@ export default function AdvancedTradingForm() {
                         <Label className="text-gray-300">Slippage Tolerance</Label>
                         <span className="text-sm text-gray-400">{form.slippage}%</span>
                       </div>
-                      <Slider
-                        value={[form.slippage]}
-                        onValueChange={(value: number[]) => updateForm('slippage', value[0])}
+                      <input
+                        type="range"
+                        value={form.slippage}
+                        onChange={(e) => updateForm('slippage', parseFloat(e.target.value))}
                         max={5}
                         min={0.1}
                         step={0.1}
-                        className="w-full"
+                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
                       />
                     </div>
                   )}
